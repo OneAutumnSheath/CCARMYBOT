@@ -1,34 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from permissions import check_permissions as check_perm, set_permissions as set_perm, view_permissions as view_perm
-import yaml
-import os
-
-# Verzeichnis für die Konfiguration
-config_dir = './config'
-config_file = f'{config_dir}/permissions.yaml'
-
-# Überprüfen der Berechtigung anhand von Permission-Nodes
-def has_permission(user, permission_node):
-    permissions = load_permissions()
-    # Überprüfen, ob der Benutzer die angeforderte Berechtigung hat
-    user_roles = [role.id for role in user.roles]
-    for role_id in user_roles:
-        if str(role_id) in permissions.get("roles", {}):
-            if permission_node in permissions["roles"][str(role_id)] or "*" in permissions["roles"][str(role_id)]:
-                return True
-    return False
-
-# Laden der Berechtigungen aus der YAML-Datei
-def load_permissions():
-    if not os.path.exists(config_file):
-        return {}
-    try:
-        with open(config_file, 'r') as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        return {}
+from permissions_logic import check_permissions, set_permissions, view_permissions  # Import aus der neuen Datei
 
 class Permissions(commands.Cog):
     def __init__(self, bot):
@@ -39,7 +12,7 @@ class Permissions(commands.Cog):
         """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
         
         permission_node = f"checkpermissions.{command_name}"  # Beispiel-Node für Berechtigung
-        if has_permission(interaction.user, permission_node):
+        if check_permissions(command_name, interaction.user.id, [role.id for role in interaction.user.roles]):
             await interaction.response.send_message(f"Du bist berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
         else:
             await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
@@ -49,8 +22,8 @@ class Permissions(commands.Cog):
         """Setzt Berechtigungen für eine Rolle."""
         
         permission_node = "setpermissions"  # Beispiel-Node für Berechtigung
-        if has_permission(interaction.user, permission_node):
-            set_perm(role.id, [command_name])  # Berechtigungen setzen
+        if check_permissions(command_name, interaction.user.id, [role.id for role in interaction.user.roles]):
+            set_permissions(role.id, [command_name])  # Berechtigungen setzen
             await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden gesetzt: {command_name}", ephemeral=True)
         else:
             await interaction.response.send_message("Du hast keine Berechtigung, Berechtigungen zu setzen.", ephemeral=True)
@@ -60,12 +33,12 @@ class Permissions(commands.Cog):
         """Zeigt Berechtigungen für eine Rolle oder einen Benutzer an."""
         
         permission_node = "viewpermissions"  # Beispiel-Node für Berechtigung
-        if has_permission(interaction.user, permission_node):
+        if check_permissions(permission_node, interaction.user.id, [role.id for role in interaction.user.roles]):
             # Berechtigungen anzeigen
             if user:
-                permissions_info = view_perm(user_id=user.id)
+                permissions_info = view_permissions(user_id=user.id)
             elif role:
-                permissions_info = view_perm(role_id=role.id)
+                permissions_info = view_permissions(role_id=role.id)
             else:
                 permissions_info = "Bitte gebe entweder einen Benutzer oder eine Rolle an."
             
