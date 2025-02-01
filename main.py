@@ -25,10 +25,15 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     print(f"Bot ist bereit! Eingeloggt als {bot.user} (ID: {bot.user.id})")
-
+    
+    # Cogs asynchron laden
     for filename in os.listdir('./commands'):
         if filename.endswith('.py'):
-            await bot.load_extension(f'commands.{filename[:-3]}')
+            try:
+                await bot.load_extension(f'commands.{filename[:-3]}')
+                print(f"Loaded {filename}")
+            except Exception as e:
+                print(f"Error loading {filename}: {e}")
     try:
         await bot.tree.sync()  # Synchronisiert alle Befehle global
         print("Globale Slash-Befehle erfolgreich synchronisiert!")
