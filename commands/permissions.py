@@ -16,10 +16,25 @@ def load_permissions():
 
     return permissions
 
+# Berechtigungsprüfung für Benutzer und Rolle
+async def is_allowed(interaction: discord.Interaction, permission_node: str):
+    permissions = load_permissions()
+
+    # Überprüfen der Berechtigungen für den Benutzer
+    if str(interaction.user.id) in permissions.get('users', {}) and permission_node in permissions['users'][str(interaction.user.id)]:
+        return True
+
+    # Überprüfen der Berechtigungen für die Rolle
+    for role in interaction.user.roles:
+        if str(role.id) in permissions.get('roles', {}) and permission_node in permissions['roles'][str(role.id)]:
+            return True
+
+    return False
+
+
 # Setzen von Berechtigungen für Benutzer oder Rollen
-@commands.command(name="setpermissions")
+@commands.hybrid_command(name="setpermissions", description="Setze Berechtigung für Benutzer oder Rolle")
 async def set_permissions(ctx, user: discord.Member = None, role: discord.Role = None, permission_node: str = None):
-    # Überprüfen, ob entweder ein Benutzer oder eine Rolle angegeben wurde
     if not user and not role:
         await ctx.send("Gebe Rolle oder User an, dem die Berechtigung gesetzt werden soll.", ephemeral=True)
         return
@@ -33,7 +48,6 @@ async def set_permissions(ctx, user: discord.Member = None, role: discord.Role =
 
     # Wenn eine Rolle angegeben wurde, setzen der Berechtigungen
     if role:
-        # Berechtigungs-Logik für die Rolle
         if permission_node not in permissions.get('roles', {}):
             permissions['roles'][str(role.id)] = []
         permissions['roles'][str(role.id)].append(permission_node)
@@ -41,7 +55,6 @@ async def set_permissions(ctx, user: discord.Member = None, role: discord.Role =
     
     # Wenn ein Benutzer angegeben wurde, setzen der Berechtigungen
     if user:
-        # Berechtigungs-Logik für den Benutzer
         if permission_node not in permissions.get('users', {}):
             permissions['users'][str(user.id)] = []
         permissions['users'][str(user.id)].append(permission_node)
@@ -51,10 +64,10 @@ async def set_permissions(ctx, user: discord.Member = None, role: discord.Role =
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f)
 
+
 # Unsetzen von Berechtigungen für Benutzer oder Rollen
-@commands.command(name="unsetpermission")
+@commands.hybrid_command(name="unsetpermission", description="Entferne eine Berechtigung von Benutzer oder Rolle")
 async def unset_permission(ctx, user: discord.Member = None, role: discord.Role = None, permission_node: str = None):
-    # Überprüfen, ob entweder ein Benutzer oder eine Rolle angegeben wurde
     if not user and not role:
         await ctx.send("Gebe Rolle oder User an, von dem die Berechtigung entfernt werden soll.", ephemeral=True)
         return
@@ -86,10 +99,10 @@ async def unset_permission(ctx, user: discord.Member = None, role: discord.Role 
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f)
 
+
 # Zurücksetzen von Berechtigungen für Benutzer oder Rollen
-@commands.command(name="resetpermissions")
+@commands.hybrid_command(name="resetpermissions", description="Setze alle Berechtigungen für Benutzer oder Rolle zurück")
 async def reset_permissions(ctx, user: discord.Member = None, role: discord.Role = None):
-    # Überprüfen, ob entweder ein Benutzer oder eine Rolle angegeben wurde
     if not user and not role:
         await ctx.send("Gebe Rolle oder User an, dessen Berechtigungen zurückgesetzt werden sollen.", ephemeral=True)
         return
@@ -117,8 +130,7 @@ async def reset_permissions(ctx, user: discord.Member = None, role: discord.Role
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f)
 
+
 # Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    bot.add_command(set_permissions)
-    bot.add_command(unset_permission)
-    bot.add_command(reset_permissions)
+    await bot.add_cog(Permissions(bot))
