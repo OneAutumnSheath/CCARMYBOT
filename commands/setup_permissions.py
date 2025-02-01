@@ -26,13 +26,13 @@ class Permissions(commands.Cog):
         await interaction.response.send_message(f"{interaction.user.mention}, du wurdest als Admin gesetzt und alle Befehle stehen dir zur Verfügung.", ephemeral=True)
 
     @app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle")
-    async def setpermissions(self, interaction: discord.Interaction, role: discord.Role, *commands: str):
+    async def setpermissions(self, interaction: discord.Interaction, role: discord.Role, command_name: str):
         """Setzt Berechtigungen für eine Rolle."""
         
         # Berechtigungen setzen
-        set_permissions(role.id, commands)
+        set_permissions(role.id, [command_name])
 
-        await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden gesetzt: {', '.join(commands)}", ephemeral=True)
+        await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden gesetzt: {command_name}", ephemeral=True)
 
     @app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
     async def checkpermissions(self, interaction: discord.Interaction, command_name: str):
