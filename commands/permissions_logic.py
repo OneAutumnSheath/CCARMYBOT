@@ -79,7 +79,7 @@ def unset_permissions(user_or_role_id, command_names):
     # Speichere die Änderungen zurück in die Datei
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f, default_flow_style=False)
- def reset_permissions(user_or_role_id):
+def reset_permissions(user_or_role_id):
     """Setzt alle Berechtigungen für einen Benutzer oder eine Rolle zurück."""
     permissions = load_permissions()
 
