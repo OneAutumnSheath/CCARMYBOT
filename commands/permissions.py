@@ -119,6 +119,4 @@ async def reset_permissions(ctx, user: discord.Member = None, role: discord.Role
 
 # Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    bot.add_command(set_permissions)
-    bot.add_command(unset_permission)
-    bot.add_command(reset_permissions)
+    await bot.add_cog(Permissions(bot))
