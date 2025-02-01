@@ -29,6 +29,11 @@ async def on_ready():
     for filename in os.listdir('./commands'):
         if filename.endswith('.py'):
             await bot.load_extension(f'commands.{filename[:-3]}')
+    try:
+        await bot.tree.sync()  # Synchronisiert alle Befehle global
+        print("Globale Slash-Befehle erfolgreich synchronisiert!")
+    except Exception as e:
+        print(f"Fehler bei der globalen Synchronisierung: {e}")
 
 
 token = os.getenv("DISCORD_TOKEN")

@@ -38,5 +38,5 @@ class Aufstellung(commands.Cog):
         )
 
 # Cog in den Bot laden
-def setup(bot):
-    bot.add_cog(Aufstellung(bot))
+async def setup(bot):
+    await bot.add_cog(Aufstellung(bot))
