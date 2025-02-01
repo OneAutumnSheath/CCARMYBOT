@@ -12,13 +12,13 @@ class Personal(commands.Cog):
 
     # Slash-Befehl: einstellen
     @app_commands.command(name="einstellen", description="Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu.")
-    async def einstellen(self, interaction: discord.Interaction, user: discord.Member, name: str, dn: str, dienstgrad: discord.Role, division: discord.Role, grund: str):
-    """Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu."""
+        async def einstellen(self, interaction: discord.Interaction, user: discord.Member, name: str, dn: str, dienstgrad: discord.Role, division: discord.Role, grund: str):
+        "Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu."
 
-    # Berechtigungsprüfung (kein await mehr, da check_permissions nicht asynchron ist)
-    if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
-        await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
-        return
+        # Berechtigungsprüfung (kein await mehr, da check_permissions nicht asynchron ist)
+        if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
+            await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+            return
         
         # Feste Rollen
         MAIN_UNIT_ROLE_ID = 1134170231275782154
