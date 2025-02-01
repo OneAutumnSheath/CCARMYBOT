@@ -1,0 +1,40 @@
+import discord
+from discord.ext import commands
+from discord import app_commands
+from permissions import set_admin, set_permissions, check_permissions
+
+class Permissions(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="setup", description="Erstellt die Berechtigungsdatei und setzt den Admin.")
+    async def setup(self, interaction: discord.Interaction):
+        """Erstellt die Berechtigungsdatei und setzt den Benutzer als Admin."""
+        
+        # Setze den Benutzer, der das Setup ausführt, als Admin
+        set_admin(interaction.user.id)
+
+        # Bestätigungsnachricht
+        await interaction.response.send_message(f"{interaction.user.mention}, du wurdest als Admin gesetzt und alle Befehle stehen dir zur Verfügung.", ephemeral=True)
+
+    @app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle")
+    async def setpermissions(self, interaction: discord.Interaction, role: discord.Role, *commands: str):
+        """Setzt Berechtigungen für eine Rolle."""
+        
+        # Berechtigungen setzen
+        set_permissions(role.id, commands)
+
+        await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden gesetzt: {', '.join(commands)}", ephemeral=True)
+
+    @app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
+    async def checkpermissions(self, interaction: discord.Interaction, command_name: str):
+        """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
+
+        # Überprüfe Berechtigungen
+        if check_permissions(command_name, interaction.user.id, [role.id for role in interaction.user.roles]):
+            await interaction.response.send_message(f"Du bist berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
+
+async def setup(bot):
+    await bot.add_cog(Permissions(bot))
