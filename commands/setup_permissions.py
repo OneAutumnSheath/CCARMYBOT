@@ -2,6 +2,13 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions import set_admin, set_permissions, check_permissions
+import sys
+import os
+
+# Füge den 'commands' Ordner zum sys.path hinzu
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from permissions import set_admin, set_permissions, check_permissions
 
 class Permissions(commands.Cog):
     def __init__(self, bot):
