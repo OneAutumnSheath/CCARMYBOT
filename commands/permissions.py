@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from discord import Interaction
 from permissions_logic import check_permissions, set_permissions, view_permissions, unset_permissions, reset_permissions  # Import aus der neuen Datei
 
 class Permissions(commands.Cog):
@@ -9,7 +10,7 @@ class Permissions(commands.Cog):
 
     # Slash-Befehl: checkpermissions
     @app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
-async def checkpermissions(self, interaction: discord.Interaction, command_name: str):
+    async def checkpermissions(self, interaction: Interaction, command_name: str):
         """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
         
         permission_node = f"checkpermissions.{command_name}"  # Beispiel-Node für Berechtigung
