@@ -26,7 +26,7 @@ class Aufstellung(commands.Cog):
         # Sende die Nachricht im Aufstellungs-Kanal
         channel = self.bot.get_channel(1136004218436722688)  # ID des Aufstellungs-Kanals
         if not channel:
-            await ctx.respond("Der Aufstellungs-Kanal konnte nicht gefunden werden.", ephemeral=True)
+            await ctx.send("Der Aufstellungs-Kanal konnte nicht gefunden werden.", ephemeral=True)
             return
 
         await channel.send(message)
