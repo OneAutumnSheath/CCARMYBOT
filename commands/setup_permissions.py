@@ -45,4 +45,4 @@ class Permissions(commands.Cog):
             await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
 
 async def setup(bot):
-    await bot.add_cog(Permissions(bot))
+    await bot.add_cog(Setup_Permissions(bot))
