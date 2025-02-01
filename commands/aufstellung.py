@@ -10,7 +10,7 @@ class Aufstellung(commands.Cog):
         # Rollenabfrage: Der Befehl darf nur von bestimmten Rollen ausgeführt werden
         allowed_roles = {1196072112977358968, 1331306902897823745, 1097648080020574260}
         if not any(role.id in allowed_roles for role in ctx.author.roles):
-            await ctx.respond("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+            await ctx.send("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
             return
 
         # Erstelle die Nachricht im gewünschten Format
@@ -32,7 +32,7 @@ class Aufstellung(commands.Cog):
         await channel.send(message)
 
         # Bestätigung für den ausführenden Benutzer
-        await ctx.respond(
+        await ctx.send(
             f"Die Aufstellung für {user.mention} wurde erfolgreich erstellt und im Aufstellungs-Kanal gesendet.",
             ephemeral=True
         )
