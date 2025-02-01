@@ -28,7 +28,7 @@ async def on_ready():
     
     # Cogs asynchron laden
     for filename in os.listdir('./commands'):
-        if filename.endswith('.py'):
+        if filename.endswith('.py') and filename != "__init__.py":
             try:
                 await bot.load_extension(f'commands.{filename[:-3]}')
                 print(f"Loaded {filename}")
