@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from discord import Interaction  # Expliziter Import
 from permissions_logic import check_permissions  # Berechtigungsprüfung
 PERSONAL_CHANNEL = 1097625981671448698  # Kanal-ID, in dem die Ankündigung gemacht wird
 MGMT_ID = 1097648080020574260  # Management ID für Ankündigungen
