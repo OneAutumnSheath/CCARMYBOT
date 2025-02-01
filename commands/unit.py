@@ -59,7 +59,7 @@ async def remove_unit_role(interaction, unit_name):
         return f"Fehler beim Entfernen der Rolle: {e}"
 
 # Slash-Befehl: unit-eintritt
-@discord.ui.tree.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
+@app_commands.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
 async def unit_eintritt(
     interaction: discord.Interaction,
     user: discord.Member,
@@ -114,7 +114,7 @@ async def unit_eintritt(
     await interaction.response.send_message(f"{user.mention} wurde erfolgreich der Unit {unit.mention} zugefügt.", ephemeral=True)
 
 # Slash-Befehl: unit-austritt
-@discord.ui.tree.command(name="unit-austritt", description="Lässt einen Benutzer aus einer Unit austreten und entfernt angegebene Rollen.")
+@app_commands.command(name="unit-austritt", description="Lässt einen Benutzer aus einer Unit austreten und entfernt angegebene Rollen.")
 async def unit_austritt(
     interaction: discord.Interaction,
     user: discord.Member,
@@ -165,7 +165,7 @@ async def unit_austritt(
     )
 
 # Slash-Befehl: unit-aufstieg
-@discord.ui.tree.command(name="unit-aufstieg", description="Lässt einen Benutzer zu einer höheren Unit aufsteigen.")
+@app_commands.command(name="unit-aufstieg", description="Lässt einen Benutzer zu einer höheren Unit aufsteigen.")
 async def unit_aufstieg(
     interaction: discord.Interaction,
     user: discord.Member,
@@ -209,7 +209,7 @@ async def unit_aufstieg(
     embed.set_footer(text="U.S. ARMY Management")
 
     # Sende die Nachricht in den festgelegten Kanal (Unit-Kanal)
-    channel = bot.get_channel(UNIT_CHANNEL)
+    channel = interaction.guild.get_channel(UNIT_CHANNEL)
     if not channel:
         await interaction.response.send_message("Der Unit-Kanal wurde nicht gefunden!", ephemeral=True)
         return
