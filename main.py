@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import yaml
 import os
+from dotenv import load_dotenv
 
 # Verzeichnis und Dateipfad für die Konfiguration
 config_dir = './config'
@@ -36,6 +37,16 @@ config = load_config()
 # Überprüfen, ob verbose aktiviert ist
 verbose = config.get('verbose', False)
 
+# Lade die Umgebungsvariablen aus der .env-Datei
+load_dotenv()
+
+# Holen des Tokens aus der Umgebungsvariablen
+token = os.getenv('DISCORD_TOKEN')
+
+# Überprüfen, ob der Token vorhanden ist
+if not token:
+    raise ValueError("No DISCORD_TOKEN found. Please set it in the .env file.")
+
 # Setup der Bot-Instanz
 intents = discord.Intents.default()
 intents.message_content = True  # Um sicherzustellen, dass der Bot Nachrichten lesen kann
@@ -65,5 +76,4 @@ async def on_error(event, *args, **kwargs):
     # Weitere Fehlerbehandlung hier
 
 # Start des Bots
-token = os.getenv('DISCORD_TOKEN')  # Discord-Token sollte in einer .env-Datei oder auf andere Weise gespeichert sein
 bot.run(token)
