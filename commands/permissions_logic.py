@@ -79,21 +79,17 @@ def unset_permissions(user_or_role_id, command_names):
     # Speichere die Änderungen zurück in die Datei
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f, default_flow_style=False)
- # Slash-Befehl: resetpermissions
-@app_commands.command(name="resetpermissions", description="Setzt alle Berechtigungen einer Rolle oder eines Benutzers zurück")
-async def resetpermissions(self, interaction: discord.Interaction, role: discord.Role = None, user: discord.User = None):
-    """Setzt alle Berechtigungen einer Rolle oder eines Benutzers zurück."""
-    
-    if not role and not user:
-        await interaction.response.send_message("Gebe Rolle oder User an, dessen Berechtigungen zurückgesetzt werden sollen.", ephemeral=True)
-        return
+ def reset_permissions(user_or_role_id):
+    """Setzt alle Berechtigungen für einen Benutzer oder eine Rolle zurück."""
+    permissions = load_permissions()
 
-    if role:
-        reset_permissions(role.id)  # Berechtigungen für die Rolle zurücksetzen
-        await interaction.response.send_message(f"Alle Berechtigungen für die Rolle {role.name} wurden zurückgesetzt.", ephemeral=True)
-    elif user:
-        reset_permissions(user.id)  # Berechtigungen für den Benutzer zurücksetzen
-        await interaction.response.send_message(f"Alle Berechtigungen für den Benutzer {user.name} wurden zurückgesetzt.", ephemeral=True)
+    # Lösche alle Berechtigungen für den angegebenen Benutzer oder die Rolle
+    if str(user_or_role_id) in permissions.get("roles", {}):
+        permissions["roles"][str(user_or_role_id)] = []
+
+    # Speichere die Änderungen zurück in die Datei
+    with open(config_file, 'w') as f:
+        yaml.dump(permissions, f, default_flow_style=False)
 
 # Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
