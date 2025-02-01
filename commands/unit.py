@@ -58,188 +58,196 @@ async def remove_unit_role(interaction, unit_name):
     except Exception as e:
         return f"Fehler beim Entfernen der Rolle: {e}"
 
-# Slash-Befehl: unit-eintritt
-@app_commands.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
-async def unit_eintritt(
-    interaction: discord.Interaction,
-    user: discord.Member,
-    unit: discord.Role,
-    grund: str,
-    zusätzliche_rolle_1: discord.Role = None,
-    zusätzliche_rolle_2: discord.Role = None,
-    zusatz: str = None  # Neuer optionaler Parameter
-):
-    if not await is_allowed(interaction):  # Berechtigungsprüfung
-        return
+# Cog-Klasse für Unit
+class Unit(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-    # Zusatztext in der Nachricht vorbereiten
-    zusatz_text = f"\n\nZusatz: {zusatz}" if zusatz else ""
+    # Slash-Befehl: unit-eintritt
+    @app_commands.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
+    async def unit_eintritt(
+        self,
+        interaction: discord.Interaction,
+        user: discord.Member,
+        unit: discord.Role,
+        grund: str,
+        zusätzliche_rolle_1: discord.Role = None,
+        zusätzliche_rolle_2: discord.Role = None,
+        zusatz: str = None  # Neuer optionaler Parameter
+    ):
+        if not await is_allowed(interaction):  # Berechtigungsprüfung
+            return
 
-    # Erstelle den Embed
-    embed = discord.Embed(
-        title="Unit Eintritt",
-        description=(
-            f"╔══════════════════════════════════════════════╗\n\n"
-            f"Hiermit tritt {user.mention} der Unit {unit.mention} bei.\n\n"
-            f"Grund: {grund}{zusatz_text}\n\n"  # Zusatztext wird hier hinzugefügt, wenn vorhanden
-            f"Hochachtungsvoll,\n"
-            f"<@&{MGMT_ID}>\n\n"
-            f"╚══════════════════════════════════════════════╝"
-        ),
-        color=discord.Color.green()  # Farbcode: #00FF00
-    )
-    embed.set_footer(text="U.S. ARMY Management")
+        # Zusatztext in der Nachricht vorbereiten
+        zusatz_text = f"\n\nZusatz: {zusatz}" if zusatz else ""
 
-    # Rollen hinzufügen
-    try:
-        roles_to_add = [unit]
-        if zusätzliche_rolle_1:
-            roles_to_add.append(zusätzliche_rolle_1)
-        if zusätzliche_rolle_2:
-            roles_to_add.append(zusätzliche_rolle_2)
+        # Erstelle den Embed
+        embed = discord.Embed(
+            title="Unit Eintritt",
+            description=(
+                f"╔══════════════════════════════════════════════╗\n\n"
+                f"Hiermit tritt {user.mention} der Unit {unit.mention} bei.\n\n"
+                f"Grund: {grund}{zusatz_text}\n\n"  # Zusatztext wird hier hinzugefügt, wenn vorhanden
+                f"Hochachtungsvoll,\n"
+                f"<@&{MGMT_ID}>\n\n"
+                f"╚══════════════════════════════════════════════╝"
+            ),
+            color=discord.Color.green()  # Farbcode: #00FF00
+        )
+        embed.set_footer(text="U.S. ARMY Management")
 
-        await user.add_roles(*roles_to_add, reason=f"Unit Eintritt: {grund}")
-    except discord.DiscordException as e:
-        await interaction.response.send_message(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
-        return
+        # Rollen hinzufügen
+        try:
+            roles_to_add = [unit]
+            if zusätzliche_rolle_1:
+                roles_to_add.append(zusätzliche_rolle_1)
+            if zusätzliche_rolle_2:
+                roles_to_add.append(zusätzliche_rolle_2)
 
-    # Sende die Nachricht in den festgelegten Kanal
-    channel = interaction.guild.get_channel(UNIT_CHANNEL)
-    if channel:
+            await user.add_roles(*roles_to_add, reason=f"Unit Eintritt: {grund}")
+        except discord.DiscordException as e:
+            await interaction.response.send_message(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
+            return
+
+        # Sende die Nachricht in den festgelegten Kanal
+        channel = interaction.guild.get_channel(UNIT_CHANNEL)
+        if channel:
+            await channel.send(embed=embed)
+        else:
+            await interaction.response.send_message("Ankündigungskanal nicht gefunden.", ephemeral=True)
+
+        # Bestätigung für den ausführenden Benutzer
+        await interaction.response.send_message(f"{user.mention} wurde erfolgreich der Unit {unit.mention} zugefügt.", ephemeral=True)
+
+    # Slash-Befehl: unit-austritt
+    @app_commands.command(name="unit-austritt", description="Lässt einen Benutzer aus einer Unit austreten und entfernt angegebene Rollen.")
+    async def unit_austritt(
+        self,
+        interaction: discord.Interaction,
+        user: discord.Member,
+        unit: discord.Role,
+        grund: str,
+        zu_entfernende_rolle_1: discord.Role = None,
+        zu_entfernende_rolle_2: discord.Role = None
+    ):
+        if not await is_allowed(interaction):  # Berechtigungsprüfung
+            return
+
+        # Erstelle den Embed
+        embed = discord.Embed(
+            title="Unit Austritt",
+            description=(
+                f"╔══════════════════════════════════════════════╗\n\n"
+                f"Hiermit tritt {user.mention} aus der Unit {unit.mention} aus.\n\n"
+                f"Grund: {grund}\n\n"
+                f"Hochachtungsvoll,\n"
+                f"<@&{MGMT_ID}>\n\n"
+                f"╚══════════════════════════════════════════════╝"
+            ),
+            color=discord.Color.red()  # Farbcode: #FF0000
+        )
+        embed.set_footer(text="U.S. ARMY Management")
+
+        # Sende die Nachricht in den festgelegten Kanal
+        channel = interaction.guild.get_channel(UNIT_CHANNEL)
         await channel.send(embed=embed)
-    else:
-        await interaction.response.send_message("Ankündigungskanal nicht gefunden.", ephemeral=True)
 
-    # Bestätigung für den ausführenden Benutzer
-    await interaction.response.send_message(f"{user.mention} wurde erfolgreich der Unit {unit.mention} zugefügt.", ephemeral=True)
+        # Rollen entfernen
+        try:
+            roles_to_remove = [unit]
+            if zu_entfernende_rolle_1:
+                roles_to_remove.append(zu_entfernende_rolle_1)
+            if zu_entfernende_rolle_2:
+                roles_to_remove.append(zu_entfernende_rolle_2)
 
-# Slash-Befehl: unit-austritt
-@app_commands.command(name="unit-austritt", description="Lässt einen Benutzer aus einer Unit austreten und entfernt angegebene Rollen.")
-async def unit_austritt(
-    interaction: discord.Interaction,
-    user: discord.Member,
-    unit: discord.Role,
-    grund: str,
-    zu_entfernende_rolle_1: discord.Role = None,
-    zu_entfernende_rolle_2: discord.Role = None
-):
-    if not await is_allowed(interaction):  # Berechtigungsprüfung
-        return
+            await user.remove_roles(*roles_to_remove, reason=f"Unit Austritt: {grund}")
+        except discord.DiscordException as e:
+            await interaction.response.send_message(f"Fehler beim Entfernen der Rollen: {e}", ephemeral=True)
+            return
 
-    # Erstelle den Embed
-    embed = discord.Embed(
-        title="Unit Austritt",
-        description=(
-            f"╔══════════════════════════════════════════════╗\n\n"
-            f"Hiermit tritt {user.mention} aus der Unit {unit.mention} aus.\n\n"
-            f"Grund: {grund}\n\n"
-            f"Hochachtungsvoll,\n"
-            f"<@&{MGMT_ID}>\n\n"
-            f"╚══════════════════════════════════════════════╝"
-        ),
-        color=discord.Color.red()  # Farbcode: #FF0000
-    )
-    embed.set_footer(text="U.S. ARMY Management")
-
-    # Sende die Nachricht in den festgelegten Kanal
-    channel = interaction.guild.get_channel(UNIT_CHANNEL)
-    await channel.send(embed=embed)
-
-    # Rollen entfernen
-    try:
-        roles_to_remove = [unit]
-        if zu_entfernende_rolle_1:
-            roles_to_remove.append(zu_entfernende_rolle_1)
-        if zu_entfernende_rolle_2:
-            roles_to_remove.append(zu_entfernende_rolle_2)
-
-        await user.remove_roles(*roles_to_remove, reason=f"Unit Austritt: {grund}")
-    except discord.DiscordException as e:
-        await interaction.response.send_message(f"Fehler beim Entfernen der Rollen: {e}", ephemeral=True)
-        return
-
-    # Bestätigung für den ausführenden Benutzer
-    await interaction.response.send_message(
-        f"{user.mention} wurde erfolgreich aus der Unit {unit.mention} entfernt, und die angegebenen Rollen wurden ebenfalls entfernt.",
-        ephemeral=True
-    )
-
-# Slash-Befehl: unit-aufstieg
-@app_commands.command(name="unit-aufstieg", description="Lässt einen Benutzer zu einer höheren Unit aufsteigen.")
-async def unit_aufstieg(
-    interaction: discord.Interaction,
-    user: discord.Member,
-    unit: discord.Role,
-    grund: str,
-    neuerposten: discord.Role = None,  # Neue Variable für den Posten als Rolle
-    entfernte_rolle: discord.Role = None,
-    zusätzliche_rolle: discord.Role = None
-):
-    if not await is_allowed(interaction):  # Berechtigungsprüfung
-        return
-
-    # Erstelle den Embed für die Ankündigung
-    if neuerposten:  # Wenn neuer Posten als Rolle angegeben wurde
-        embed = discord.Embed(
-            title="Unit Aufstieg",
-            description=(
-                f"╔══════════════════════════════════════════════╗\n\n"
-                f"Hiermit steigt {user.mention} in der Unit {unit.mention} zum {neuerposten.mention} auf.\n\n"
-                f"Grund: {grund}\n\n"
-                f"Hochachtungsvoll,\n"
-                f"<@&{MGMT_ID}>\n\n"
-                f"╚══════════════════════════════════════════════╝"
-            ),
-            color=discord.Color.blue()  # Blau für Aufstieg
-        )
-    else:  # Wenn kein neuer Posten angegeben wurde
-        embed = discord.Embed(
-            title="Unit Aufstieg",
-            description=(
-                f"╔══════════════════════════════════════════════╗\n\n"
-                f"Hiermit steigt {user.mention} zum Vollwertigen {unit.mention} Mitglied auf.\n\n"
-                f"Grund: {grund}\n\n"
-                f"Hochachtungsvoll,\n"
-                f"<@&{MGMT_ID}>\n\n"
-                f"╚══════════════════════════════════════════════╝"
-            ),
-            color=discord.Color.blue()  # Blau für Aufstieg
+        # Bestätigung für den ausführenden Benutzer
+        await interaction.response.send_message(
+            f"{user.mention} wurde erfolgreich aus der Unit {unit.mention} entfernt, und die angegebenen Rollen wurden ebenfalls entfernt.",
+            ephemeral=True
         )
 
-    embed.set_footer(text="U.S. ARMY Management")
+    # Slash-Befehl: unit-aufstieg
+    @app_commands.command(name="unit-aufstieg", description="Lässt einen Benutzer zu einer höheren Unit aufsteigen.")
+    async def unit_aufstieg(
+        self,
+        interaction: discord.Interaction,
+        user: discord.Member,
+        unit: discord.Role,
+        grund: str,
+        neuerposten: discord.Role = None,  # Neue Variable für den Posten als Rolle
+        entfernte_rolle: discord.Role = None,
+        zusätzliche_rolle: discord.Role = None
+    ):
+        if not await is_allowed(interaction):  # Berechtigungsprüfung
+            return
 
-    # Sende die Nachricht in den festgelegten Kanal (Unit-Kanal)
-    channel = interaction.guild.get_channel(UNIT_CHANNEL)
-    if not channel:
-        await interaction.response.send_message("Der Unit-Kanal wurde nicht gefunden!", ephemeral=True)
-        return
-    await channel.send(embed=embed)
+        # Erstelle den Embed für die Ankündigung
+        if neuerposten:  # Wenn neuer Posten als Rolle angegeben wurde
+            embed = discord.Embed(
+                title="Unit Aufstieg",
+                description=(
+                    f"╔══════════════════════════════════════════════╗\n\n"
+                    f"Hiermit steigt {user.mention} in der Unit {unit.mention} zum {neuerposten.mention} auf.\n\n"
+                    f"Grund: {grund}\n\n"
+                    f"Hochachtungsvoll,\n"
+                    f"<@&{MGMT_ID}>\n\n"
+                    f"╚══════════════════════════════════════════════╝"
+                ),
+                color=discord.Color.blue()  # Blau für Aufstieg
+            )
+        else:  # Wenn kein neuer Posten angegeben wurde
+            embed = discord.Embed(
+                title="Unit Aufstieg",
+                description=(
+                    f"╔══════════════════════════════════════════════╗\n\n"
+                    f"Hiermit steigt {user.mention} zum Vollwertigen {unit.mention} Mitglied auf.\n\n"
+                    f"Grund: {grund}\n\n"
+                    f"Hochachtungsvoll,\n"
+                    f"<@&{MGMT_ID}>\n\n"
+                    f"╚══════════════════════════════════════════════╝"
+                ),
+                color=discord.Color.blue()  # Blau für Aufstieg
+            )
 
-    # Rolle hinzufügen, optionale Rolle hinzufügen und alte Rolle entfernen
-    try:
-        await user.add_roles(unit, reason=f"Unit Aufstieg: {grund}")
-        
-        # Neuer Posten als Rolle hinzufügen, falls angegeben
-        if neuerposten:
-            await user.add_roles(neuerposten, reason=f"Unit Aufstieg: {grund}")
+        embed.set_footer(text="U.S. ARMY Management")
 
-        # Zusätzliche Rolle hinzufügen, falls angegeben
-        if zusätzliche_rolle:
-            await user.add_roles(zusätzliche_rolle, reason=f"Zusätzliche Rolle beim Unit Aufstieg: {grund}")
-        
-        # Alte Rolle entfernen, falls angegeben
-        if entfernte_rolle:
-            await user.remove_roles(entfernte_rolle, reason=f"Entfernung alter Rolle beim Unit Aufstieg: {grund}")
-    except discord.DiscordException as e:
-        await interaction.response.send_message(f"Fehler beim Bearbeiten der Rollen: {e}", ephemeral=True)
-        return
+        # Sende die Nachricht in den festgelegten Kanal (Unit-Kanal)
+        channel = interaction.guild.get_channel(UNIT_CHANNEL)
+        if not channel:
+            await interaction.response.send_message("Der Unit-Kanal wurde nicht gefunden!", ephemeral=True)
+            return
+        await channel.send(embed=embed)
 
-    # Bestätigung für den ausführenden Benutzer
-    await interaction.response.send_message(
-        f"{user.mention} wurde erfolgreich zum Vollwertigen Mitglied der Unit {unit.mention} befördert. "
-        f"Zusätzliche Rolle: {zusätzliche_rolle.mention if zusätzliche_rolle else 'Keine angegeben'}.",
-        ephemeral=True
-    )
+        # Rolle hinzufügen, optionale Rolle hinzufügen und alte Rolle entfernen
+        try:
+            await user.add_roles(unit, reason=f"Unit Aufstieg: {grund}")
+            
+            # Neuer Posten als Rolle hinzufügen, falls angegeben
+            if neuerposten:
+                await user.add_roles(neuerposten, reason=f"Unit Aufstieg: {grund}")
+
+            # Zusätzliche Rolle hinzufügen, falls angegeben
+            if zusätzliche_rolle:
+                await user.add_roles(zusätzliche_rolle, reason=f"Zusätzliche Rolle beim Unit Aufstieg: {grund}")
+            
+            # Alte Rolle entfernen, falls angegeben
+            if entfernte_rolle:
+                await user.remove_roles(entfernte_rolle, reason=f"Entfernung alter Rolle beim Unit Aufstieg: {grund}")
+        except discord.DiscordException as e:
+            await interaction.response.send_message(f"Fehler beim Bearbeiten der Rollen: {e}", ephemeral=True)
+            return
+
+        # Bestätigung für den ausführenden Benutzer
+        await interaction.response.send_message(
+            f"{user.mention} wurde erfolgreich zum Vollwertigen Mitglied der Unit {unit.mention} befördert. "
+            f"Zusätzliche Rolle: {zusätzliche_rolle.mention if zusätzliche_rolle else 'Keine angegeben'}.",
+            ephemeral=True
+        )
 
 # Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
