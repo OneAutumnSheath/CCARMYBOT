@@ -23,12 +23,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 
 @bot.event
-async def on_ready():
+def on_ready():
     print(f"Bot ist bereit! Eingeloggt als {bot.user} (ID: {bot.user.id})")
 
     for filename in os.listdir('./commands'):
         if filename.endswith('.py'):
-            bot.load_extension(f'commands.{filename[:-3]}')
+        bot.load_extension(f'commands.{filename[:-3]}')
 
 
 token = os.getenv("DISCORD_TOKEN")
