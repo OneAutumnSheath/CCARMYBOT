@@ -18,7 +18,7 @@ def load_config():
 config = load_config()
 
 # Überprüfen, ob verbose aktiviert ist
-verbose = config.get('verbose', True)
+verbose = config.get('verbose', False)
 
 # Setup der Bot-Instanz
 intents = discord.Intents.default()
