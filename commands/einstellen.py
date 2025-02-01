@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, Interaction  # Wir importieren die richtige Interaktion-Klasse
 
 # Erstelle die Klasse für den Einstellen-Befehl
 class Einstellen(commands.Cog):
@@ -9,7 +9,7 @@ class Einstellen(commands.Cog):
 
     # Slash-Befehl: einstellen
     @app_commands.command(name="einstellen", description="Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu.")
-    async def einstellen(self, interaction: discord.Interaction, user: discord.Member, name: str, dn: str, dienstgrad: discord.Role, division: discord.Role, grund: str):
+    async def einstellen(self, interaction: Interaction, user: discord.Member, name: str, dn: str, dienstgrad: discord.Role, division: discord.Role, grund: str):
         """Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu."""
 
         # Berechtigungsprüfung
