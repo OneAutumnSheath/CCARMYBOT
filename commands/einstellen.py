@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from permissions_logic import check_permissions  # Berechtigungsprüfung
 
 # Erstelle die Klasse für den Einstellen-Befehl
 class Einstellen(commands.Cog):
