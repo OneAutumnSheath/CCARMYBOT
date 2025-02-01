@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from permissions import set_admin, set_permissions, check_permissions
 
+
 class Permissions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

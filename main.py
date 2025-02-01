@@ -20,7 +20,8 @@ intents.message_content = True  # Für das Abrufen des Inhalts von Nachrichten (
 
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-
+# Füge den 'commands' Ordner zum sys.path hinzu
+sys.path.insert(0, os.path.abspath('./commands'))
 
 @bot.event
 async def on_ready():
