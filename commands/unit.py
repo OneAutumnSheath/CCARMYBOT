@@ -59,7 +59,7 @@ async def remove_unit_role(interaction, unit_name):
         return f"Fehler beim Entfernen der Rolle: {e}"
 
 # Slash-Befehl: unit-eintritt
-@bot.tree.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
+@discord.ui.tree.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
 async def unit_eintritt(
     interaction: discord.Interaction,
     user: discord.Member,
@@ -114,7 +114,7 @@ async def unit_eintritt(
     await interaction.response.send_message(f"{user.mention} wurde erfolgreich der Unit {unit.mention} zugefügt.", ephemeral=True)
 
 # Slash-Befehl: unit-austritt
-@bot.tree.command(name="unit-austritt", description="Lässt einen Benutzer aus einer Unit austreten und entfernt angegebene Rollen.")
+@discord.ui.tree.command(name="unit-austritt", description="Lässt einen Benutzer aus einer Unit austreten und entfernt angegebene Rollen.")
 async def unit_austritt(
     interaction: discord.Interaction,
     user: discord.Member,
@@ -165,7 +165,7 @@ async def unit_austritt(
     )
 
 # Slash-Befehl: unit-aufstieg
-@bot.tree.command(name="unit-aufstieg", description="Lässt einen Benutzer zu einer höheren Unit aufsteigen.")
+@discord.ui.tree.command(name="unit-aufstieg", description="Lässt einen Benutzer zu einer höheren Unit aufsteigen.")
 async def unit_aufstieg(
     interaction: discord.Interaction,
     user: discord.Member,
