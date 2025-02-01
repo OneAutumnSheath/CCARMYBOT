@@ -2,15 +2,10 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions  # Berechtigungsprüfung
-import yaml
-import os
 
-# Verzeichnis für die Konfiguration
-config_dir = './config'
-config_file = f'{config_dir}/permissions.yaml'
-
-UNIT_CHANNEL = 1173700352403591189  # Kanal-ID für die Ankündigung
-MGMT_ID = 1097648080020574260  # Management-ID
+# Channel und Rollen-IDs
+UNIT_CHANNEL = 1173700352403591189  # Kanal-ID für Unit Update Ankündigungen
+MGMT_ID = 1097648080020574260  # Management-ID für die Ankündigungen
 
 # Berechtigungsprüfung für den Befehl
 async def is_allowed(interaction: discord.Interaction):
@@ -20,45 +15,7 @@ async def is_allowed(interaction: discord.Interaction):
     await interaction.response.send_message(f"Du hast keine Berechtigung, diesem Befehl auszuführen.", ephemeral=True)
     return False
 
-# Zuweisung einer Rolle (Unit) an einen Benutzer
-async def assign_unit_role(interaction, unit_name):
-    units = load_units()
-    
-    if unit_name not in units:
-        return f"Unit '{unit_name}' existiert nicht."
-    
-    # Hole die Rolle aus der Guild
-    role = discord.utils.get(interaction.guild.roles, name=unit_name)
-    if not role:
-        return f"Die Rolle für Unit '{unit_name}' konnte nicht gefunden werden."
-    
-    # Füge die Rolle dem Benutzer hinzu
-    try:
-        await interaction.user.add_roles(role)
-        return f"{interaction.user.mention} wurde der Unit '{unit_name}' erfolgreich zugewiesen!"
-    except Exception as e:
-        return f"Fehler beim Zuweisen der Rolle: {e}"
-
-# Entferne eine Rolle (Unit) von einem Benutzer
-async def remove_unit_role(interaction, unit_name):
-    units = load_units()
-    
-    if unit_name not in units:
-        return f"Unit '{unit_name}' existiert nicht."
-    
-    # Hole die Rolle aus der Guild
-    role = discord.utils.get(interaction.guild.roles, name=unit_name)
-    if not role:
-        return f"Die Rolle für Unit '{unit_name}' konnte nicht gefunden werden."
-    
-    # Entferne die Rolle vom Benutzer
-    try:
-        await interaction.user.remove_roles(role)
-        return f"{interaction.user.mention} wurde erfolgreich aus der Unit '{unit_name}' entfernt!"
-    except Exception as e:
-        return f"Fehler beim Entfernen der Rolle: {e}"
-
-# Cog-Klasse für Unit
+# Cog-Klasse für Unit-Operationen
 class Unit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -246,6 +203,84 @@ class Unit(commands.Cog):
         await interaction.response.send_message(
             f"{user.mention} wurde erfolgreich zum Vollwertigen Mitglied der Unit {unit.mention} befördert. "
             f"Zusätzliche Rolle: {zusätzliche_rolle.mention if zusätzliche_rolle else 'Keine angegeben'}.",
+            ephemeral=True
+        )
+
+    # Slash-Befehl: unit-abstieg
+    @app_commands.command(name="unit-abstieg", description="Degradiert einen Benutzer innerhalb einer Unit von einem Posten und entfernt den alten Posten.")
+    async def unit_abstieg(
+        self,
+        interaction: discord.Interaction,
+        user: discord.Member,
+        unit: discord.Role,
+        alter_posten: discord.Role,
+        grund: str,
+        neuer_posten: discord.Role = None
+    ):
+        if not await is_allowed(interaction):
+            return
+
+        # Sicherstellen, dass der Benutzer, die Unit und der alte Posten existieren
+        if not user or not unit or not alter_posten:
+            await interaction.response.send_message("Benutzer, Unit oder alter Posten fehlen oder sind ungültig.", ephemeral=True)
+            return
+
+        # Erstelle den Embed
+        if neuer_posten:
+            embed = discord.Embed(
+                title="Unit Abstieg",
+                description=(
+                    f"╔══════════════════════════════════════════════╗\n\n"
+                    f"Hiermit wird {user.mention} innerhalb der Unit {unit.mention} vom Posten des {alter_posten.mention} "
+                    f"zum {neuer_posten.mention} degradiert.\n\n"
+                    f"Grund: {grund}\n\n"
+                    f"Hochachtungsvoll,\n"
+                    f"<@&1097648080020574260>\n\n"
+                    f"╚══════════════════════════════════════════════╝"
+                ),
+                color=discord.Color.orange()  # Farbcode: Orange
+            )
+        else:
+            embed = discord.Embed(
+                title="Unit Abstieg",
+                description=(
+                    f"╔══════════════════════════════════════════════╗\n\n"
+                    f"Hiermit wird {user.mention} innerhalb der Unit {unit.mention} vom Posten des {alter_posten.mention} "
+                    f"degradiert.\n\n"
+                    f"Grund: {grund}\n\n"
+                    f"Hochachtungsvoll,\n"
+                    f"<@&1097648080020574260>\n\n"
+                    f"╚══════════════════════════════════════════════╝"
+                ),
+                color=discord.Color.orange()  # Farbcode: Orange
+            )
+
+        embed.set_footer(text="U.S. ARMY Management")
+
+        # Sende die Nachricht in den festgelegten Kanal (Unit Update Kanal)
+        channel = bot.get_channel(1173700352403591189)  # ID des Unit Update Kanals
+        if channel:
+            await channel.send(embed=embed)
+        else:
+            await interaction.response.send_message("Der Kanal konnte nicht gefunden werden.", ephemeral=True)
+            return
+
+        # Entferne den alten Posten und füge den neuen Posten hinzu (falls angegeben)
+        try:
+            # Entferne den alten Posten
+            await user.remove_roles(alter_posten, reason=f"Degradiert: {grund}")
+
+            # Füge den neuen Posten hinzu, falls angegeben
+            if neuer_posten:
+                await user.add_roles(neuer_posten, reason=f"Degradiert zu {neuer_posten.name}")
+            
+        except discord.DiscordException as e:
+            await interaction.response.send_message(f"Fehler beim Degradieren des Benutzers: {e}", ephemeral=True)
+            return
+
+        # Bestätigung für den ausführenden Benutzer
+        await interaction.response.send_message(
+            f"{user.mention} wurde erfolgreich vom Posten des {alter_posten.mention} degradiert.",
             ephemeral=True
         )
 
