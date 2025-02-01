@@ -9,7 +9,7 @@ class Permissions(commands.Cog):
 
     # Slash-Befehl: checkpermissions
     @app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
-    async def checkpermissions(self, interaction: discord.Interaction, command_name: str):
+    async def checkpermissions(self, interaction, command_name: str):
         """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
         
         permission_node = f"checkpermissions.{command_name}"  # Beispiel-Node für Berechtigung
@@ -18,18 +18,17 @@ class Permissions(commands.Cog):
         else:
             await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
 
-# Slash-Befehl: setpermissions
-@ app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle oder einen Benutzer")
-async def setpermissions(self, interaction: discord.Interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
-    # ...
-    if role:
-        set_permissions(role.id, [command_name], is_user=False)  # Korrektur: is_user=False
-    elif user:
-        set_permissions(user.id, [command_name], is_user=True)   # Korrektur: is_user=True
+    # Slash-Befehl: setpermissions
+    @app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle oder einen Benutzer")
+    async def setpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
+        if role:
+            set_permissions(role.id, [command_name], is_user=False)  # Korrektur: is_user=False
+        elif user:
+            set_permissions(user.id, [command_name], is_user=True)   # Korrektur: is_user=True
 
     # Slash-Befehl: viewpermissions
     @app_commands.command(name="viewpermissions", description="Zeigt Berechtigungen für einen Benutzer oder eine Rolle")
-    async def viewpermissions(self, interaction: discord.Interaction, user: discord.User = None, role: discord.Role = None):
+    async def viewpermissions(self, interaction, user: discord.User = None, role: discord.Role = None):
         """Zeigt Berechtigungen für eine Rolle oder einen Benutzer an."""
         
         permission_node = "viewpermissions"  # Beispiel-Node für Berechtigung
@@ -48,7 +47,7 @@ async def setpermissions(self, interaction: discord.Interaction, role: discord.R
 
     # Slash-Befehl: unsetpermissions
     @app_commands.command(name="unsetpermissions", description="Entfernt Berechtigungen für eine Rolle oder einen Benutzer")
-    async def unsetpermissions(self, interaction: discord.Interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
+    async def unsetpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
         """Entfernt Berechtigungen für eine Rolle oder einen Benutzer."""
         
         if not role and not user:
@@ -64,7 +63,7 @@ async def setpermissions(self, interaction: discord.Interaction, role: discord.R
 
     # Slash-Befehl: resetpermissions
     @app_commands.command(name="resetpermissions", description="Setzt alle Berechtigungen einer Rolle oder eines Benutzers zurück")
-    async def resetpermissions(self, interaction: discord.Interaction, role: discord.Role = None, user: discord.User = None):
+    async def resetpermissions(self, interaction, role: discord.Role = None, user: discord.User = None):
         """Setzt alle Berechtigungen einer Rolle oder eines Benutzers zurück."""
         
         if not role and not user:
