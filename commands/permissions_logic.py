@@ -23,7 +23,7 @@ def check_permissions(permission_node, user_id, role_ids):
     if str(user_id) in permissions.get("users", {}):
         if "*" in permissions["users"][str(user_id)]:
             return True
-        if permission_node in permissions["roles"][str(role_id)]:
+        if permission_node in permissions["user"][str(user_id)]:
                 return True
 
     # Prüfe die Berechtigungen für jede Rolle des Benutzers
