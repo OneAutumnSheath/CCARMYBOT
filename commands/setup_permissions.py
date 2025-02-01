@@ -38,4 +38,5 @@ class Permissions(commands.Cog):
 
 # Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
-    await bot.add_cog(Permissions(bot))  # Achte darauf, dass hier keine doppelte Registrierung erfolgt
+    # Stelle sicher, dass der 'Permissions' Cog hier nicht mehr geladen wird
+    pass
