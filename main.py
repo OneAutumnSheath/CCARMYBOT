@@ -28,7 +28,7 @@ def on_ready():
 
     for filename in os.listdir('./commands'):
         if filename.endswith('.py'):
-        bot.load_extension(f'commands.{filename[:-3]}')
+            bot.load_extension(f'commands.{filename[:-3]}')
 
 
 token = os.getenv("DISCORD_TOKEN")
