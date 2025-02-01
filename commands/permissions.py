@@ -27,13 +27,11 @@ def load_permissions():
 def check_permissions(command_name, user_id, role_ids):
     permissions = load_permissions()
 
-    # Überprüfen, ob der Benutzer eine Rolle hat, die Berechtigungen für den Befehl hat
     for role_id in role_ids:
         if str(role_id) in permissions.get("roles", {}):
             if command_name in permissions["roles"][str(role_id)] or "*" in permissions["roles"][str(role_id)]:
                 return True
 
-    # Überprüfen, ob der Benutzer explizit für den Befehl in den Berechtigungen gesetzt ist
     if str(user_id) in permissions.get("roles", {}):
         if "*" in permissions["roles"][str(user_id)]:
             return True
@@ -103,5 +101,4 @@ class Permissions(commands.Cog):
 
 # Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
-    # Stelle sicher, dass die `Permissions`-Klasse korrekt geladen wird
     await bot.add_cog(Permissions(bot))

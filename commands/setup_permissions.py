@@ -2,14 +2,6 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions import set_admin, set_permissions, check_permissions
-import sys
-import os
-
-# Füge den 'commands' Ordner zum sys.path hinzu
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-
-from permissions import set_admin, set_permissions, check_permissions
-
 
 class Permissions(commands.Cog):
     def __init__(self, bot):
@@ -44,5 +36,6 @@ class Permissions(commands.Cog):
         else:
             await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
 
+# Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
-    await bot.add_cog(Setup_Permissions(bot))
+    await bot.add_cog(Permissions(bot))  # Achte darauf, dass hier keine doppelte Registrierung erfolgt
