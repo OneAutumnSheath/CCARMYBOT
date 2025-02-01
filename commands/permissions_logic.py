@@ -16,27 +16,22 @@ def load_permissions():
         return {}
 
 def check_permissions(permission_node, user_id, role_ids):
-    permissions = load_permissions()  # Lädt die Berechtigungen aus der YAML-Datei
+    permissions = load_permissions()
 
-    # Zuerst prüfen, ob der Benutzer "*" hat (für alle Berechtigungen)
+    # Prüfe Benutzer-spezifische Berechtigungen
     if str(user_id) in permissions.get("users", {}):
-        if "*" in permissions["users"][str(user_id)]:
+        user_perms = permissions["users"][str(user_id)]
+        if "*" in user_perms or permission_node in user_perms:
             return True
 
-    # Prüfe die Berechtigungen für jede Rolle des Benutzers
+    # Prüfe Rollen-spezifische Berechtigungen
     for role_id in role_ids:
         if str(role_id) in permissions.get("roles", {}):
-            # Prüfe, ob die Rolle "*" hat (für alle Berechtigungen)
-            if "*" in permissions["roles"][str(role_id)]:
-                return True
-            # Prüfe die spezifische Berechtigung
-            if permission_node in permissions["roles"][str(role_id)]:
+            role_perms = permissions["roles"][str(role_id)]
+            if "*" in role_perms or permission_node in role_perms:
                 return True
 
-    # Wenn keine "*" und keine spezifische Berechtigung gefunden, zurückgeben False
     return False
-
-
 
 # Berechtigungen für eine Rolle oder einen Benutzer setzen
 def set_permissions(identifier, commands, is_user=False):
