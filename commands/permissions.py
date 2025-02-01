@@ -9,7 +9,7 @@ class Permissions(commands.Cog):
 
     # Slash-Befehl: checkpermissions
     @app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
-    async def checkpermissions(self, interaction: Interaction, command_name: str):
+async def checkpermissions(self, interaction: discord.Interaction, command_name: str):
         """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
         
         permission_node = f"checkpermissions.{command_name}"  # Beispiel-Node für Berechtigung
