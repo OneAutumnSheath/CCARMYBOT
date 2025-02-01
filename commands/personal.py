@@ -110,15 +110,6 @@ class Personal(commands.Cog):
             f"{user.mention} wurde erfolgreich vom Rang {alter_rang.mention} zum Rang {neuer_rang.mention} herabgestuft.",
             ephemeral=True
         )
-
-class EinstellenCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    async def is_allowed(self, interaction):
-        # Hier deine Berechtigungsprüfungen einfügen
-        return True
-
     @app_commands.command(name="einstellen", description="Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu.")
     async def einstellen(
         self,
