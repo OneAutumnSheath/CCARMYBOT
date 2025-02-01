@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions  # Berechtigungsprüfung
-
+PERSONAL_CHANNEL = 1097625981671448698  # Kanal-ID, in dem die Ankündigung gemacht wird
+MGMT_ID = 1097648080020574260  # Management ID für Ankündigungen
 # Erstelle die Klasse für den Einstellen-Befehl
 class Einstellen(commands.Cog):
     def __init__(self, bot):
