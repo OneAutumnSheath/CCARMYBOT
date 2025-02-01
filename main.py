@@ -3,15 +3,31 @@ from discord.ext import commands
 import yaml
 import os
 
-# Lese die Konfiguration aus einer YAML-Datei
-def load_config():
-    config_file = './config/config.yaml'  # Pfad zur Konfigurationsdatei
-    if not os.path.exists(config_file):
-        raise FileNotFoundError(f"Config file not found at {config_file}")
+# Verzeichnis und Dateipfad für die Konfiguration
+config_dir = './config'
+config_file = f'{config_dir}/config.yaml'
 
+# Standard-Konfiguration
+default_config = {
+    'verbose': True
+}
+
+# Lese die Konfiguration oder erstelle sie, wenn sie nicht existiert
+def load_config():
+    # Prüfe, ob das Verzeichnis existiert, andernfalls erstelle es
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    # Wenn die config.yaml nicht existiert, erstelle sie mit Standardwerten
+    if not os.path.exists(config_file):
+        with open(config_file, 'w') as f:
+            yaml.dump(default_config, f)  # Schreibe die Standardkonfiguration in die Datei
+        print(f"Config file not found. Creating default config at {config_file}")
+    
+    # Lade die Konfigurationsdatei
     with open(config_file, 'r') as f:
         config = yaml.safe_load(f)
-
+    
     return config
 
 # Konfiguration laden
