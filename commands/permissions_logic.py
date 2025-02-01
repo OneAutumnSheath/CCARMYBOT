@@ -16,14 +16,14 @@ def load_permissions():
         return {}
 
 # Berechtigungen für einen Befehl überprüfen
-def check_permissions(command_name, user_id, role_ids):
+def check_permissions(permission_node, user_id, role_ids):
     permissions = load_permissions()
     for role_id in role_ids:
         if str(role_id) in permissions.get("roles", {}):
-            if command_name in permissions["roles"][str(role_id)] or "*" in permissions["roles"][str(role_id)]:
+            if permission_node in permissions["roles"][str(role_id)] or "*" in permissions["roles"][str(role_id)]:
                 return True
-    if str(user_id) in permissions.get("roles", {}):
-        if "*" in permissions["roles"][str(user_id)]:
+    if str(user_id) in permissions.get("users", {}):
+        if "*" in permissions["users"][str(user_id)]:
             return True
     return False
 
@@ -44,8 +44,8 @@ def view_permissions(user_id=None, role_id=None):
     permissions_info = []
 
     if user_id:  # Zeige Berechtigungen für einen Benutzer
-        if str(user_id) in permissions.get("roles", {}):
-            permissions_info.append(f"Permissions for User {user_id}: {permissions['roles'][str(user_id)]}")
+        if str(user_id) in permissions.get("users", {}):
+            permissions_info.append(f"Permissions for User {user_id}: {permissions['users'][str(user_id)]}")
         else:
             permissions_info.append(f"No permissions found for User {user_id}")
     
@@ -56,7 +56,7 @@ def view_permissions(user_id=None, role_id=None):
             permissions_info.append(f"No permissions found for Role {role_id}")
 
     return "\n".join(permissions_info) if permissions_info else "No permissions data found."
+
+# Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    # Dieser Cog dient nur als Logik-Hub und muss nicht unbedingt als Cog registriert werden,
-    # wenn es nur als funktionale Hilfsdatei dient. Aber du kannst dies hinzufügen, wenn du es möchtest.
     print("Permissions logic loaded")
