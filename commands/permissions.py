@@ -64,3 +64,5 @@ def set_admin(user_id):
 
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f, default_flow_style=False)
+async def setup(bot):
+    await bot.add_cog(Permissions(bot))
