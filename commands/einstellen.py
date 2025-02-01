@@ -57,7 +57,7 @@ class Einstellen(commands.Cog):
         embed.set_footer(text="U.S. ARMY Management")
 
         # Sende die Ankündigung im festgelegten Kanal
-        channel = bot.get_channel(PERSONAL_CHANNEL)
+        channel = self.bot.get_channel(PERSONAL_CHANNEL)
         if not channel:
             await interaction.response.send_message("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
             return
