@@ -38,6 +38,8 @@ async def is_allowed(interaction: discord.Interaction) -> bool:
 
 # Slash-Befehl: unit-eintritt
 @bot.tree.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
+UNIT_CHANNEL = 1173700352403591189
+MGMT_ID = 1097648080020574260
 async def unit_eintritt(
     interaction: discord.Interaction,
     user: discord.Member,
