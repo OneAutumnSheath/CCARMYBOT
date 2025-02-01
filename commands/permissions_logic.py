@@ -27,14 +27,24 @@ def check_permissions(permission_node, user_id, role_ids):
             return True
     return False
 
-# Berechtigungen für eine Rolle setzen
-def set_permissions(role_id, commands):
+# Berechtigungen für eine Rolle oder einen Benutzer setzen
+def set_permissions(identifier, commands, is_user=False):
     permissions = load_permissions()
-    if "roles" not in permissions:
-        permissions["roles"] = {}
-    if str(role_id) not in permissions["roles"]:
-        permissions["roles"][str(role_id)] = []
-    permissions["roles"][str(role_id)] += commands
+    
+    if is_user:  # Falls ein Benutzer und nicht eine Rolle
+        if "users" not in permissions:
+            permissions["users"] = {}
+        if str(identifier) not in permissions["users"]:
+            permissions["users"][str(identifier)] = []
+        permissions["users"][str(identifier)].extend(commands)
+    else:  # Für eine Rolle
+        if "roles" not in permissions:
+            permissions["roles"] = {}
+        if str(identifier) not in permissions["roles"]:
+            permissions["roles"][str(identifier)] = []
+        permissions["roles"][str(identifier)].extend(commands)
+    
+    # Berechtigungen in der Datei speichern
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f, default_flow_style=False)
 
