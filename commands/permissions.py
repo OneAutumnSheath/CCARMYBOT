@@ -123,4 +123,4 @@ async def delpermission(ctx, user: discord.User = None, role: discord.Role = Non
 
 # Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    await bot.add_cog(Permissions(bot))  # Hier wird der Cog korrekt hinzugefügt
+    await bot.add_cog(Permissions(bot))  # Cog dem Bot hinzufügen
