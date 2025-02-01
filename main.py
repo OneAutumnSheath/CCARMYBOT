@@ -1,47 +1,53 @@
 import discord
 from discord.ext import commands
+import yaml
 import os
-import sys
-from dotenv import load_dotenv
 
+# Lese die Konfiguration aus einer YAML-Datei
+def load_config():
+    config_file = './config/config.yaml'  # Pfad zur Konfigurationsdatei
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Config file not found at {config_file}")
 
-load_dotenv()
+    with open(config_file, 'r') as f:
+        config = yaml.safe_load(f)
 
+    return config
+
+# Konfiguration laden
+config = load_config()
+
+# Überprüfen, ob verbose aktiviert ist
+verbose = config.get('verbose', True)
+
+# Setup der Bot-Instanz
 intents = discord.Intents.default()
-
-intents.messages = True  # Für Nachrichten
-intents.guilds = True  # Für Guilds (Server)
-intents.members = True  # Für Mitglieder
-intents.bans = True  # Für Bans
-intents.emojis = True  # Für Emojis
-intents.reactions = True  # Für Reaktionen
-intents.presences = True  # Für Benutzerstatus (online/offline)
-intents.typing = True  # Für das Tippen
-intents.message_content = True  # Für das Abrufen des Inhalts von Nachrichten (nur erforderlich, wenn der Bot auf Nachrichteninhalte zugreifen muss)
-
+intents.message_content = True  # Um sicherzustellen, dass der Bot Nachrichten lesen kann
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-# Füge den 'commands' Ordner zum sys.path hinzu
-sys.path.insert(0, os.path.abspath('./commands'))
+
+# Verbose Logging: Detaillierte Ausgabe, wenn verbose auf True gesetzt ist
+def log(message):
+    if verbose:
+        print(f"[VERBOSE] {message}")
 
 @bot.event
 async def on_ready():
-    print(f"Bot ist bereit! Eingeloggt als {bot.user} (ID: {bot.user.id})")
-    
-    # Cogs asynchron laden
-    for filename in os.listdir('./commands'):
-        if filename.endswith('.py') and filename != "__init__.py":
-            try:
-                await bot.load_extension(f'commands.{filename[:-3]}')
-                print(f"Loaded {filename}")
-            except Exception as e:
-                print(f"Error loading {filename}: {e}")
-    try:
-        await bot.tree.sync()  # Synchronisiert alle Befehle global
-        print("Globale Slash-Befehle erfolgreich synchronisiert!")
-    except Exception as e:
-        print(f"Fehler bei der globalen Synchronisierung: {e}")
+    log(f'Bot is ready and logged in as {bot.user}')
+    print(f'Logged in as {bot.user}')
+    # Weitere initialisierende Aufgaben, die verbose nutzen könnten
 
+@bot.command(name='ping')
+async def ping(ctx):
+    log(f'Ping command received from {ctx.author}')  # Detaillierte Ausgabe bei Verwendung von ping
+    await ctx.send('Pong!')
 
-token = os.getenv("DISCORD_TOKEN")
+# Beispiel für eine ausführliche Debugging-Ausgabe bei Fehlern
+@bot.event
+async def on_error(event, *args, **kwargs):
+    log(f"An error occurred: {event}")
+    # Weitere Fehlerbehandlung hier
+
+# Start des Bots
+token = os.getenv('DISCORD_TOKEN')  # Discord-Token sollte in einer .env-Datei oder auf andere Weise gespeichert sein
 bot.run(token)
