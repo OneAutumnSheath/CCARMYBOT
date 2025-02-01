@@ -75,6 +75,25 @@ def set_admin(user_id):
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f, default_flow_style=False)
 
+# Neuer Befehl zum Anzeigen der Berechtigungen
+def view_permissions(user_id=None, role_id=None):
+    permissions = load_permissions()
+    permissions_info = []
+
+    if user_id:  # Zeige Berechtigungen für einen Benutzer
+        if str(user_id) in permissions.get("roles", {}):
+            permissions_info.append(f"Permissions for User {user_id}: {permissions['roles'][str(user_id)]}")
+        else:
+            permissions_info.append(f"No permissions found for User {user_id}")
+    
+    if role_id:  # Zeige Berechtigungen für eine Rolle
+        if str(role_id) in permissions.get("roles", {}):
+            permissions_info.append(f"Permissions for Role {role_id}: {permissions['roles'][str(role_id)]}")
+        else:
+            permissions_info.append(f"No permissions found for Role {role_id}")
+
+    return "\n".join(permissions_info) if permissions_info else "No permissions data found."
+
 class Permissions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -111,6 +130,20 @@ class Permissions(commands.Cog):
             await interaction.response.send_message(f"Du bist berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
         else:
             await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
+
+    @app_commands.command(name="viewpermissions", description="Zeigt Berechtigungen für einen Benutzer oder eine Rolle")
+    async def viewpermissions(self, interaction: discord.Interaction, user: discord.User = None, role: discord.Role = None):
+        """Zeigt Berechtigungen für einen Benutzer oder eine Rolle."""
+        
+        # Berechtigungen anzeigen
+        if user:
+            permissions_info = view_permissions(user_id=user.id)
+        elif role:
+            permissions_info = view_permissions(role_id=role.id)
+        else:
+            permissions_info = "Bitte gebe entweder einen Benutzer oder eine Rolle an."
+
+        await interaction.response.send_message(permissions_info, ephemeral=True)
 
 # Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
