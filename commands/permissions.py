@@ -1,6 +1,8 @@
 import logging
 import yaml
 from collections import defaultdict
+from discord.ext import commands
+
 
 # Logging konfigurieren
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
