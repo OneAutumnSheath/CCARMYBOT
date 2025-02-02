@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-BOT_LOG_CHANNEL = 1333208767059464243  # Setze hier die Log-Kanal-ID ein
+# Beispielwert für den Log-Kanal (ersetze dies durch die tatsächliche Kanal-ID)
+BOT_LOG_CHANNEL = 1097625981671448698  # Ersetze dies durch deine Log-Kanal-ID
 
 class LogModule(commands.Cog):
     def __init__(self, bot):
@@ -13,33 +14,33 @@ class LogModule(commands.Cog):
         # Hole den Log-Channel
         log_channel = self.bot.get_channel(BOT_LOG_CHANNEL)
         if not log_channel:
-            print(f"Bot-Log-Channel mit ID {BOT_LOG_CHANNEL} nicht gefunden.")
+            print(f"Log channel with ID {BOT_LOG_CHANNEL} not found.")
             return
-
-        # Informationen über den Befehl und die Argumente sammeln
-        command_name = ctx.command.name if ctx.command else "Unbekannt"
-        user = ctx.author
-        arguments = ctx.kwargs  # Enthält die übergebenen Argumente
+        
+        # Überprüfe, ob die Nachricht überhaupt erzeugt wird
+        print(f"Logging command: {ctx.command.name} by {ctx.author}.")
 
         # Erstelle die Log-Nachricht
         embed = discord.Embed(
             title="Befehlsausführung",
             description=(
-                f"**Befehl:** `{command_name}`\n"
-                f"**Ausgeführt von:** {user.mention} (`{user}`)\n"
+                f"**Befehl:** `{ctx.command.name}`\n"
+                f"**Ausgeführt von:** {ctx.author.mention} (`{ctx.author}`)\n"
                 f"**Argumente:**\n" +
-                "\n".join([f"`{key}`: `{value}`" for key, value in arguments.items()]) +
+                "\n".join([f"`{key}`: `{value}`" for key, value in ctx.kwargs.items()]) +
                 "\n"
             ),
             color=discord.Color.blue()  # Farbcode: Blau für Logs
         )
-        embed.set_footer(text=f"Benutzer-ID: {user.id}")
+        embed.set_footer(text=f"Benutzer-ID: {ctx.author.id}")
         embed.timestamp = discord.utils.utcnow()
 
         try:
             # Sende die Log-Nachricht
             await log_channel.send(embed=embed)
         except discord.DiscordException as e:
-            print(f"Fehler beim Senden der Log-Nachricht: {e}")
+            print(f"Error sending log message: {e}")
+
+# Die Setup-Funktion, um den Cog zu registrieren
 async def setup(bot):
-    await bot.add_cog(LogModule(bot))  # Hier wird der Permissions-Cog dem Bot hinzugefügt
+    await bot.add_cog(LogModule(bot))  # Hier wird der LogModule-Cog dem Bot hinzugefügt
