@@ -6,7 +6,7 @@ from permissions_logic import check_permissions  # Importiere die Berechtigungsl
 PERSONAL_CHANNEL = 1097625981671448698  # Kanal-ID, in dem die Ankündigung gemacht wird
 MGMT_ID = 1097648080020574260  # Management ID für Ankündigungen
 
-class Personal(commands.Cog):
+class Derank(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -113,4 +113,4 @@ class Personal(commands.Cog):
 
 # Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    await bot.add_cog(Personal(bot))  # Hier wird der Personal-Cog dem Bot hinzugefügt
+    await bot.add_cog(Derank(bot))  # Hier wird der Personal-Cog dem Bot hinzugefügt
