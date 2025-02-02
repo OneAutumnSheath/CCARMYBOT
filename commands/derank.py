@@ -38,7 +38,7 @@ class Derank(commands.Cog):
         # Erstelle den Embed für die Ankündigung
         if neue_division:  # Wenn neue Division angegeben wurde
             embed = discord.Embed(
-                title="Rang Abstieg",
+                title="Degradierung",
                 description=(
                     f"╔══════════════════════════════════════════════╗\n\n"
                     f"Hiermit bekleidet {user.mention} nun den Dienstgrad eines {neuer_rang.mention}.\n\n"
@@ -53,7 +53,7 @@ class Derank(commands.Cog):
             )
         else:  # Wenn keine neue Division angegeben wurde
             embed = discord.Embed(
-                title="Rang Abstieg",
+                title="Degradierung",
                 description=(
                     f"╔══════════════════════════════════════════════╗\n\n"
                     f"Hiermit bekleidet {user.mention} nun den Posten als {neuer_rang.mention}.\n\n"

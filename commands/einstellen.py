@@ -62,7 +62,7 @@ class EinstellenCog(commands.Cog):
 
         # Erstelle den Embed
         embed = discord.Embed(
-            title="Neueinstellung",
+            title="Einstellung",
             description=(
                 f"╔══════════════════════════════════════════════╗\n\n"
                 f"Hiermit tritt {user.mention} der Army als {dienstgrad.mention} bei.\n\n"
