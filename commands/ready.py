@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from commands.log_module import LogModule  # Importiere das Log-Modul
-from commands.command_stats import CommandStats  # Importiere die Statistik
 from discord import app_commands
 
 class General(commands.Cog):
@@ -18,7 +17,7 @@ class General(commands.Cog):
 
         # Logge den Befehl, wenn er ausgeführt wird
         await self.log_module.on_command_completion(interaction)  # Protokolliere den Befehl
-        await self.command_stats.on_command_completion(interaction)
+
         # Antwort, die bestätigt, dass der Bot bereit ist
         await interaction.followup.send(f"Bot ist bereit! Eingeloggt als {self.bot.user} (ID: {self.bot.user.id})", ephemeral=True)
 
