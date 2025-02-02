@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import yaml
 import os
+from permissions_logic import check_permissions  # Importiere die Berechtigungsprüfung
 
 # Datei für die Speicherung der Nutzungsstatistiken
 STATS_FILE = "./config/command_usage.yaml"
@@ -28,6 +29,14 @@ class CommandStats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def is_allowed(self, interaction, user: discord.Member):
+        """Überprüft, ob der Benutzer die Berechtigung hat, die Statistiken eines anderen Benutzers anzusehen."""
+        # Wenn der Benutzer die eigene Statistik sehen möchte, ist das erlaubt
+        if user == interaction.user:
+            return True
+        # Wenn nicht, prüfe die Berechtigungen
+        return check_permissions("stats_all", interaction.user.id, [role.id for role in interaction.user.roles])
+
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         """Erhöht die Nutzungszahl eines Slash-Befehls, wenn er erfolgreich ausgeführt wurde."""
@@ -50,6 +59,11 @@ class CommandStats(commands.Cog):
     @app_commands.command(name="commandstats", description="Zeigt die Befehlsnutzung eines Benutzers an.")
     async def commandstats(self, interaction: discord.Interaction, user: discord.Member = None):
         """Zeigt an, wie oft ein Benutzer welche Befehle benutzt hat."""
+        
+        # Wenn ein Benutzer angegeben ist, überprüfen, ob der Zugriff erlaubt ist
+        if user and not self.is_allowed(interaction, user):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung, die Statistiken dieses Benutzers zu sehen.", ephemeral=True)
+            return
         
         stats = load_stats()
         user_id = str(user.id if user else interaction.user.id)
@@ -95,7 +109,7 @@ class CommandStats(commands.Cog):
         
         for user_id, usage_data in stats.items():
             user = await self.bot.fetch_user(int(user_id))
-            message += f"\n**{user.name}**:\n"
+            message += f"\n**{user.mention}**:\n"  # Hier wird der Benutzer markiert
             for cmd, count in usage_data.items():
                 message += f"  - **{cmd}**: {count} mal\n"
         
