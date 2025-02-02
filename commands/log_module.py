@@ -41,3 +41,5 @@ class LogModule(commands.Cog):
             await log_channel.send(embed=embed)
         except discord.DiscordException as e:
             print(f"Fehler beim Senden der Log-Nachricht: {e}")
+async def setup(bot):
+    await bot.add_cog(LogModule(bot))  # Hier wird der Permissions-Cog dem Bot hinzugefügt
