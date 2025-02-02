@@ -7,25 +7,6 @@ class Permissions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Slash-Befehl: checkpermissions
-    #@app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
-    #async def checkpermissions(self, interaction, command_name: str):
-    #    """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
-        
-    #    permission_node = f"checkpermissions.{command_name}"  # Beispiel-Node für Berechtigung
-     #   if check_permissions(command_name, interaction.user.id, [role.id for role in interaction.user.roles]):
-      #      await interaction.response.send_message(f"Du bist berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
-       # else:
-        #    await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
-
-    # Slash-Befehl: setpermissions
-    @app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle oder einen Benutzer")
-    async def setpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
-        if role:
-            set_permissions(role.id, [command_name], is_user=False)  # Korrektur: is_user=False
-        elif user:
-            set_permissions(user.id, [command_name], is_user=True)   # Korrektur: is_user=True
-
     # Slash-Befehl: viewpermissions
     @app_commands.command(name="viewpermissions", description="Zeigt Berechtigungen für einen Benutzer oder eine Rolle")
     async def viewpermissions(self, interaction, user: discord.User = None, role: discord.Role = None):
