@@ -1,26 +1,22 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from permissions_logic import check_permissions  # Berechtigungsprüfung
+from permissions_logic import check_permissions
+# Beispiel IDs für Kanäle und Rollen
+PERSONAL_CHANNEL = 1097625981671448698  # Beispielwert für den persönlichen Kanal
+MGMT_ID = 1097648080020574260  # Beispielwert für Management-Rolle
 
-# ID für den Personal-Kanal
-PERSONAL_CHANNEL = 1097625981671448698
-MGMT_ID = 1097648080020574260  # Management ID für Ankündigungen
-
-# Berechtigungsprüfung für den Befehl
-async def is_allowed(interaction: discord.Interaction):
-    permission_node = "personal"  # Berechtigungs-Node für den Personal-Befehl
-    if check_permissions(permission_node, interaction.user.id, [role.id for role in interaction.user.roles]):
-        return True
-    await interaction.response.send_message(f"Du hast keine Berechtigung, diesem Befehl auszuführen.", ephemeral=True)
-    return False
-
-# Cog-Klasse für Personal-Operationen
-class Personal(commands.Cog):
+class EinstellenCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Slash-Befehl: einstellen
+    async def is_allowed(self, interaction):
+        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
+        if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
+            await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+            return False  # Korrigiert von Ture auf False
+        return True  # Sicherstellen, dass True zurückgegeben wird, wenn Berechtigung vorhanden ist.
+
     @app_commands.command(name="einstellen", description="Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu.")
     async def einstellen(
         self,
@@ -32,7 +28,7 @@ class Personal(commands.Cog):
         division: discord.Role,
         grund: str
     ):
-        if not await is_allowed(interaction):  # Berechtigungsprüfung
+        if not await self.is_allowed(interaction):
             return
 
         # ID der festen Rollen
@@ -96,6 +92,7 @@ class Personal(commands.Cog):
             ephemeral=True
         )
 
-# Setup-Funktion, die den Cog dem Bot hinzufügt
+
+# Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    await bot.add_cog(Personal(bot))
+    await bot.add_cog(EinstellenCog(bot))  # Hier wird der Einstellen-Cog dem Bot hinzugefügt
