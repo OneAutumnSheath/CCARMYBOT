@@ -4,7 +4,7 @@ from discord import app_commands
 from permissions_logic import set_permissions, check_permissions, view_permissions  # Import aus der neuen Datei
 
 
-class Permissions(commands.Cog):
+class SetupPermissions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
