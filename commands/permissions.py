@@ -55,3 +55,6 @@ def check_permissions(permission_node, user_id, role_ids):
     except Exception as e:
         logger.error(f"Fehler bei der Berechtigungsprüfung für Benutzer {user_id} und Node {permission_node}: {e}")
         return False
+# Setup-Funktion zum Hinzufügen des Cogs
+async def setup(bot):
+    await bot.add_cog(Permissions(bot))  # Hier wird der Permissions-Cog dem Bot hinzugefügt
