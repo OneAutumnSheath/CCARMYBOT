@@ -90,5 +90,11 @@ async def on_ready():
     except Exception as e:
         log(f"Fehler bei der globalen Synchronisierung: {e}")  # Fehler im verbose-Modus anzeigen
 
+# Lade den Log-Cog
+async def load_modules():
+    await bot.load_extension('log_module')
+
+bot.loop.run_until_complete(load_modules())
+
 # Bot starten
 bot.run(token)
