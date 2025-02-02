@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions  # Importiere die Berechtigungslogik
 from commands.log_module import LogModule
+
 # Beispielwerte für den persönlichen Kanal und Management-Rolle
 PERSONAL_CHANNEL = 1097625981671448698
 MGMT_ID = 1097648080020574260
@@ -10,7 +11,7 @@ MGMT_ID = 1097648080020574260
 class Kuendingen(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.log_module = LogModule(interaction)
+        self.log_module = LogModule(bot)
 
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
@@ -56,6 +57,7 @@ class Kuendingen(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Kicken des Benutzers: {e}", ephemeral=True)
             return
+            
         await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await interaction.response.send_message(f"{user_nickname} wurde erfolgreich gekündigt.", ephemeral=True)
