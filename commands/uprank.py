@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from commands.log_module import LogModule
-from commands.permissions import check_permissions  # Importiere die check_permissions-Funktion
+from commands.permissions_logic import check_permissions  # Importiere die check_permissions-Funktion
 
 # Definiere PERSONAL_CHANNEL direkt im Cog
 PERSONAL_CHANNEL = 1097625981671448698  # Ersetze dies mit der tatsächlichen Kanal-ID
