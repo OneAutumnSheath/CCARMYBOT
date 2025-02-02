@@ -12,7 +12,7 @@ permissions = defaultdict(dict)  # {user_id: {permission_node: bool}}
 class Permissions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+    
     def load_permissions(file_path="permissions.yaml"):
         try:
             with open(file_path, "r") as file:

@@ -63,6 +63,21 @@ class SetupPermissions(commands.Cog):
                 await interaction.response.send_message(f"Der Benutzer {user.name} ist berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
             else:
                 await interaction.response.send_message(f"Der Benutzer {user.name} hat keine Berechtigung, den Befehl '{command_name}' auszuführen.", ephemeral=True)
+    # Slash-Befehl: unsetpermissions
+    @app_commands.command(name="unsetpermissions", description="Entfernt Berechtigungen für eine Rolle oder einen Benutzer")
+    async def unsetpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
+        """Entfernt Berechtigungen für eine Rolle oder einen Benutzer."""
+
+        if not role and not user:
+            await interaction.response.send_message("Gebe Rolle oder User an, dem die Berechtigung entfernt werden soll.", ephemeral=True)
+            return
+
+        if role:
+            unset_permissions(role.id, [command_name])  # Berechtigungen für die Rolle entfernen
+            await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden entfernt: {command_name}", ephemeral=True)
+        elif user:
+            unset_permissions(user.id, [command_name])  # Berechtigungen für den Benutzer entfernen
+            await interaction.response.send_message(f"Berechtigungen für den Benutzer {user.name} wurden entfernt: {command_name}", ephemeral=True)
 
 
 # Setup-Funktion zum Hinzufügen des Cogs
