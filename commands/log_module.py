@@ -1,9 +1,7 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 
-# Beispielwert für den Log-Kanal
-BOT_LOG_CHANNEL = 123456789012345678  # Hier deine Kanal-ID eintragen
+BOT_LOG_CHANNEL = 123456789012345678  # Setze hier die Log-Kanal-ID ein
 
 class LogModule(commands.Cog):
     def __init__(self, bot):
@@ -38,9 +36,8 @@ class LogModule(commands.Cog):
         embed.set_footer(text=f"Benutzer-ID: {user.id}")
         embed.timestamp = discord.utils.utcnow()
 
-        # Sende die Log-Nachricht
-        await log_channel.send(embed=embed)
-
-# Setup-Funktion zum Hinzufügen des Cogs
-async def setup(bot):
-    await bot.add_cog(LogModule(bot))  # Hier wird der LogModule-Cog dem Bot hinzugefügt
+        try:
+            # Sende die Log-Nachricht
+            await log_channel.send(embed=embed)
+        except discord.DiscordException as e:
+            print(f"Fehler beim Senden der Log-Nachricht: {e}")

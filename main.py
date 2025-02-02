@@ -89,6 +89,7 @@ async def on_ready():
         log("Globale Slash-Befehle erfolgreich synchronisiert!")  # Log, wenn die Synchronisierung erfolgreich war
     except Exception as e:
         log(f"Fehler bei der globalen Synchronisierung: {e}")  # Fehler im verbose-Modus anzeigen
+    await bot.load_extension('log_module')
 
 # Bot starten
 bot.run(token)

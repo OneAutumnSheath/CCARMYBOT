@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions
+
 # Beispiel IDs für Kanäle und Rollen
 PERSONAL_CHANNEL = 1097625981671448698  # Beispielwert für den persönlichen Kanal
 MGMT_ID = 1097648080020574260  # Beispielwert für Management-Rolle
@@ -30,6 +31,9 @@ class EinstellenCog(commands.Cog):
     ):
         if not await self.is_allowed(interaction):
             return
+        
+        # Bestätige die Interaktion vorab, um "Unknown interaction" zu vermeiden
+        await interaction.response.defer(ephemeral=True)
 
         # ID der festen Rollen
         MAIN_UNIT_ROLE_ID = 1134170231275782154
@@ -46,12 +50,12 @@ class EinstellenCog(commands.Cog):
         try:
             await user.edit(nick=new_nickname, reason="Einstellung in die Army")
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"Der Benutzer konnte nicht umbenannt werden. Möglicherweise fehlen mir die Berechtigungen.", ephemeral=True
             )
             return
         except discord.HTTPException as e:
-            await interaction.response.send_message(f"Fehler beim Umbenennen: {e}", ephemeral=True)
+            await interaction.followup.send(f"Fehler beim Umbenennen: {e}", ephemeral=True)
             return
 
         # Erstelle den Embed
@@ -72,7 +76,7 @@ class EinstellenCog(commands.Cog):
         # Sende die Ankündigung im festgelegten Kanal
         channel = self.bot.get_channel(PERSONAL_CHANNEL)
         if not channel:
-            await interaction.response.send_message("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
+            await interaction.followup.send("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
             return
         await channel.send(embed=embed)
 
@@ -83,11 +87,11 @@ class EinstellenCog(commands.Cog):
                 if role:
                     await user.add_roles(role, reason=f"Einstellung: {grund}")
         except discord.DiscordException as e:
-            await interaction.response.send_message(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
+            await interaction.followup.send(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
             return
 
         # Bestätigungsnachricht für den Ausführenden
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"{user.mention} wurde erfolgreich als {dienstgrad.mention} eingestellt, hat die entsprechenden Rollen erhalten und wurde umbenannt zu `{new_nickname}`.",
             ephemeral=True
         )
