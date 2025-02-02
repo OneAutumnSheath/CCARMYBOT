@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from permissions_logic import check_permissions
-# Beispielwerte für den persönlichen Kanal und Management-Rolle
-PERSONAL_CHANNEL = 1097625981671448698
-MGMT_ID = 1097648080020574260
 
 class Uprank(commands.Cog):
     def __init__(self, bot):
@@ -34,6 +30,9 @@ class Uprank(commands.Cog):
         if not await self.is_allowed(interaction):
             return
 
+        # Bestätige die Interaktion vorab, um die Interaktion gültig zu halten
+        await interaction.response.defer(ephemeral=True)
+
         # Erstelle den Embed für die Ankündigung
         if neue_division:  # Wenn neue Division angegeben wurde
             embed = discord.Embed(
@@ -45,7 +44,7 @@ class Uprank(commands.Cog):
                     f"Alte DN: {alte_dn}\n"
                     f"Neue DN: {neue_dn}\n\n"
                     f"Hochachtungsvoll,\n"
-                    f"<@&{MGMT_ID}>\n\n"
+                    f"<@&MGMT_ID>\n\n"
                     f"╚══════════════════════════════════════════════╝"
                 ),
                 color=discord.Color.blue()  # Blau für Rang-Aufstieg
@@ -58,7 +57,7 @@ class Uprank(commands.Cog):
                     f"Hiermit bekleidet {user.mention} nun den Posten als {neuer_rang.mention}.\n\n"
                     f"Grund: {grund}\n\n"
                     f"Hochachtungsvoll,\n"
-                    f"<@&{MGMT_ID}>\n\n"
+                    f"<@&MGMT_ID>\n\n"
                     f"╚══════════════════════════════════════════════╝"
                 ),
                 color=discord.Color.blue()  # Blau für Rang-Aufstieg
@@ -71,7 +70,7 @@ class Uprank(commands.Cog):
         if personal_channel:
             await personal_channel.send(embed=embed)
         else:
-            await interaction.response.send_message("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
+            await interaction.followup.send("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
             return
 
         # Rollen aktualisieren
@@ -94,19 +93,19 @@ class Uprank(commands.Cog):
                 try:
                     await user.edit(nick=new_nickname, reason=f"Neue Dienstnummer: {neue_dn}")
                 except discord.Forbidden:
-                    await interaction.response.send_message(
+                    await interaction.followup.send(
                         f"Der Benutzer konnte nicht umbenannt werden. Möglicherweise fehlen mir die Berechtigungen.", ephemeral=True
                     )
                     return
                 except discord.HTTPException as e:
-                    await interaction.response.send_message(f"Fehler beim Umbenennen: {e}", ephemeral=True)
+                    await interaction.followup.send(f"Fehler beim Umbenennen: {e}", ephemeral=True)
                     return
         except discord.DiscordException as e:
-            await interaction.response.send_message(f"Fehler beim Aktualisieren der Rollen: {e}", ephemeral=True)
+            await interaction.followup.send(f"Fehler beim Aktualisieren der Rollen: {e}", ephemeral=True)
             return
 
         # Bestätigung für den ausführenden Benutzer
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"{user.mention} wurde erfolgreich vom Rang {alter_rang.mention} zum Rang {neuer_rang.mention} befördert.",
             ephemeral=True
         )
