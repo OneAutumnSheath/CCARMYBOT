@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions
+from commands.log_module import LogModule
 
 # Beispiel IDs für Kanäle und Rollen
 PERSONAL_CHANNEL = 1097625981671448698  # Beispielwert für den persönlichen Kanal
@@ -10,6 +11,7 @@ MGMT_ID = 1097648080020574260  # Beispielwert für Management-Rolle
 class EinstellenCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.log_module = LogModule(bot)
 
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
@@ -89,6 +91,8 @@ class EinstellenCog(commands.Cog):
         except discord.DiscordException as e:
             await interaction.followup.send(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
             return
+        
+        await self.log_module.on_command_completion(interaction)
 
         # Bestätigungsnachricht für den Ausführenden
         await interaction.followup.send(
