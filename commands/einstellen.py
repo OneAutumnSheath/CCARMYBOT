@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-
+from permissions_logic import check_permissions
 # Beispiel IDs für Kanäle und Rollen
 PERSONAL_CHANNEL = 1097625981671448698  # Beispielwert für den persönlichen Kanal
 MGMT_ID = 1097648080020574260  # Beispielwert für Management-Rolle
@@ -11,8 +11,11 @@ class EinstellenCog(commands.Cog):
         self.bot = bot
 
     async def is_allowed(self, interaction):
-        # Hier deine Berechtigungsprüfungen einfügen
-        return True
+        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
+        if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
+            await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+            return False  # Korrigiert von Ture auf False
+        return True  # Sicherstellen, dass True zurückgegeben wird, wenn Berechtigung vorhanden ist.
 
     @app_commands.command(name="einstellen", description="Stellt einen neuen Rekruten ein und fügt die entsprechenden Rollen hinzu.")
     async def einstellen(
