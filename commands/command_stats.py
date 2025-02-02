@@ -11,6 +11,11 @@ MGMT_ID = 1097648080020574260
 STATS_FILE = "command_usage.yaml"
 
 def load_stats():
+    """Lädt die gespeicherten Nutzungsdaten aus der YAML-Datei. Erstellt die Datei, falls sie nicht existiert."""
+    if not os.path.exists(STATS_FILE):
+        with open(STATS_FILE, "w") as f:
+            yaml.dump({}, f)  # Leere Datei initialisieren
+        return {}
     """Lädt die gespeicherten Nutzungsdaten aus der YAML-Datei."""
     if not os.path.exists(STATS_FILE):
         return {}
