@@ -23,7 +23,11 @@ class SetupPermissions(commands.Cog):
         """Setzt Berechtigungen für eine Rolle oder einen Benutzer."""
         
         if not role and not user:
-            await interaction.response.send_message("Bitte gib entweder einen Benutzer oder eine Rolle an, um die Berechtigungen zu setzen.", ephemeral=True)
+            await interaction.response.send_message("Bitte gib entweder eine Rolle oder einen Benutzer an, um die Berechtigungen zu setzen.", ephemeral=True)
+            return
+        
+        if not command_name:
+            await interaction.response.send_message("Bitte gib die Permission-Node an, dessen Berechtigung gesetzt werden soll.", ephemeral=True)
             return
         
         if role:
@@ -40,7 +44,11 @@ class SetupPermissions(commands.Cog):
         """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
         
         if not role and not user:
-            await interaction.response.send_message("Bitte gib entweder einen Benutzer oder eine Rolle an, um die Berechtigungen zu überprüfen.", ephemeral=True)
+            await interaction.response.send_message("Bitte gib entweder eine Rolle oder einen Benutzer an, um die Berechtigungen zu überprüfen.", ephemeral=True)
+            return
+        
+        if not command_name:
+            await interaction.response.send_message("Bitte gib den Befehl an, dessen Berechtigung überprüft werden soll.", ephemeral=True)
             return
         
         if role:

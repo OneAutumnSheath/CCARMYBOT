@@ -72,6 +72,7 @@ def view_permissions(user_id=None, role_id=None):
             permissions_info.append(f"No permissions found for Role {role_id}")
 
     return "\n".join(permissions_info) if permissions_info else "No permissions data found."
+
 def unset_permissions(user_or_role_id, command_names):
     """Entfernt Berechtigungen für einen Benutzer oder eine Rolle."""
     permissions = load_permissions()
@@ -82,9 +83,15 @@ def unset_permissions(user_or_role_id, command_names):
             if command in permissions["roles"][str(user_or_role_id)]:
                 permissions["roles"][str(user_or_role_id)].remove(command)
 
+    elif str(user_or_role_id) in permissions.get("users", {}):
+        for command in command_names:
+            if command in permissions["users"][str(user_or_role_id)]:
+                permissions["users"][str(user_or_role_id)].remove(command)
+
     # Speichere die Änderungen zurück in die Datei
     with open(config_file, 'w') as f:
         yaml.dump(permissions, f, default_flow_style=False)
+
 def reset_permissions(user_or_role_id):
     """Setzt alle Berechtigungen für einen Benutzer oder eine Rolle zurück."""
     permissions = load_permissions()
@@ -92,6 +99,9 @@ def reset_permissions(user_or_role_id):
     # Lösche alle Berechtigungen für den angegebenen Benutzer oder die Rolle
     if str(user_or_role_id) in permissions.get("roles", {}):
         permissions["roles"][str(user_or_role_id)] = []
+
+    elif str(user_or_role_id) in permissions.get("users", {}):
+        permissions["users"][str(user_or_role_id)] = []
 
     # Speichere die Änderungen zurück in die Datei
     with open(config_file, 'w') as f:
