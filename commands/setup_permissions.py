@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from permissions_logic import set_permissions, check_permissions  # Import aus der neuen Datei
+from permissions_logic import set_permissions, check_permissions, unset_permissions  # Import aus der neuen Datei
 
 
 class SetupPermissions(commands.Cog):
