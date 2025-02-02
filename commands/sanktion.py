@@ -9,7 +9,7 @@ class Sanktion(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-     async def is_allowed(self, interaction):
+    async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         if not check_permissions("sanktion", interaction.user.id, [role.id for role in interaction.user.roles]):
             await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)

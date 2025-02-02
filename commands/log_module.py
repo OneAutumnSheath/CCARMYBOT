@@ -1,8 +1,9 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 
-# Beispielwert für den Bot Log Channel
-BOT_LOG_CHANNEL = 123456789012345678  # Setze hier deine tatsächliche Channel-ID ein
+# Beispielwert für den Log-Kanal
+BOT_LOG_CHANNEL = 123456789012345678  # Hier deine Kanal-ID eintragen
 
 class LogModule(commands.Cog):
     def __init__(self, bot):
