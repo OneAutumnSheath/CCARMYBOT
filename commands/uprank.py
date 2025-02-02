@@ -51,7 +51,7 @@ class Uprank(commands.Cog):
                     f"Alte DN: {alte_dn}\n"
                     f"Neue DN: {neue_dn}\n\n"
                     f"Hochachtungsvoll,\n"
-                    f"<@&MGMT_ID>\n\n"
+                    f"<@&{MGMT_ID}>\n\n"
                     f"╚══════════════════════════════════════════════╝"
                 ),
                 color=discord.Color.blue()  # Blau für Rang-Aufstieg
@@ -64,7 +64,7 @@ class Uprank(commands.Cog):
                     f"Hiermit bekleidet {user.mention} nun den Posten als {neuer_rang.mention}.\n\n"
                     f"Grund: {grund}\n\n"
                     f"Hochachtungsvoll,\n"
-                    f"<@&MGMT_ID>\n\n"
+                    f"<@&{MGMT_ID}>\n\n"
                     f"╚══════════════════════════════════════════════╝"
                 ),
                 color=discord.Color.blue()  # Blau für Rang-Aufstieg
