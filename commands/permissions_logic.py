@@ -43,3 +43,6 @@ class PermissionsLogic:
         except Exception as e:
             logger.error(f"Fehler beim Abrufen der Berechtigungen für Benutzer {user_id}: {e}")
             return f"Fehler beim Abrufen der Berechtigungen für Benutzer {user_id}."
+# Setup-Funktion zum Hinzufügen des Cogs
+async def setup(bot):
+    print("Permissions logic loaded")
