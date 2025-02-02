@@ -13,7 +13,7 @@ class Permissions(commands.Cog):
         """Erstellt die Berechtigungsdatei und setzt den Benutzer als Admin."""
         
         # Setze den Benutzer, der das Setup ausführt, als Admin
-        set_admin(interaction.user.id)
+        set_permissions(interaction.user.id, ["*"], is_user=True)
 
         # Bestätigungsnachricht
         await interaction.response.send_message(f"{interaction.user.mention}, du wurdest als Admin gesetzt und alle Befehle stehen dir zur Verfügung.", ephemeral=True)
@@ -23,7 +23,7 @@ class Permissions(commands.Cog):
         """Setzt Berechtigungen für eine Rolle."""
         
         # Berechtigungen setzen
-        set_permissions(role.id, [command_name])
+        set_permissions(role.id, [command_name], is_user=False)
 
         await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden gesetzt: {command_name}", ephemeral=True)
 
@@ -39,5 +39,5 @@ class Permissions(commands.Cog):
 
 # Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
-    # Stelle sicher, dass der 'Permissions' Cog hier nicht mehr geladen wird
+    #await bot.add_cog(Permissions(bot))  # Hier wird der Permissions-Cog dem Bot hinzugefügt
     pass
