@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-BOT_LOG_CHANNEL = 123456789012345678  # Setze hier die Log-Kanal-ID ein
+BOT_LOG_CHANNEL = 1333208767059464243  # Setze hier die Log-Kanal-ID ein
 
 class LogModule(commands.Cog):
     def __init__(self, bot):
