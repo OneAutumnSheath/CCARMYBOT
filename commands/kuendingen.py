@@ -14,7 +14,7 @@ class Kuendingen(commands.Cog):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
             await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
-            return
+            return Ture
 
     @app_commands.command(name="kuendigen", description="Erstellt eine Kündigung für einen Benutzer mit angegebenem Grund.")
     async def kuendigen(self, interaction: discord.Interaction, user: discord.Member, grund: str):
