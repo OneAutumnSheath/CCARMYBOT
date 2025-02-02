@@ -39,4 +39,4 @@ class Permissions(commands.Cog):
 
 # Setup-Funktion, die den Cog dem Bot hinzufügt
 async def setup(bot):
-    await bot.add_cog(Permissions(bot))  # Hier wird der Permissions-Cog dem Bot hinzugefügt
+    await bot.add_cog(SetupPermissions(bot))  # Hier wird der Permissions-Cog dem Bot hinzugefügt
