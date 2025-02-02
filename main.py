@@ -87,14 +87,9 @@ async def load_modules():
         log("Globale Slash-Befehle erfolgreich synchronisiert!")  # Log, wenn die Synchronisierung erfolgreich war
     except Exception as e:
         log(f"Fehler bei der globalen Synchronisierung: {e}")  # Fehler im verbose-Modus anzeigen
-    
-    # Log-Modul hinzufügen
-    await bot.load_extension('log_module')
 
 # Asynchrone main Funktion, die den Bot startet
 async def main():
-    # Lade alle Module und starte den Bot
-    await load_modules()
     # Starte den Bot
     await bot.start(token)
 
