@@ -18,8 +18,10 @@ class LogModule(commands.Cog):
 
         # Informationen über den Befehl und die Argumente sammeln
         command_name = ctx.command.name if ctx.command else "Unbekannt"
-        user = ctx.author
-        arguments = ctx.kwargs  # Enthält die übergebenen Argumente
+        
+        # Verwende `interaction.user` statt `ctx.author`
+        user = ctx.user if hasattr(ctx, 'user') else ctx.author  # Absicherung für Interaktionen vs. normale Befehle
+        arguments = ctx.kwargs if hasattr(ctx, 'kwargs') else {}  # Argumente aus Interaktion
 
         # Erstelle die Log-Nachricht
         embed = discord.Embed(
