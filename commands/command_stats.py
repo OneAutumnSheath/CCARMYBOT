@@ -3,10 +3,6 @@ from discord.ext import commands
 from discord import app_commands
 import yaml
 import os
-from permissions_logic import check_permissions  # Importiere die Berechtigungsprüfung
-
-# Admin-Rollen-ID (Management ID für Berechtigungsprüfung)
-MGMT_ID = 1097648080020574260
 
 # Datei für die Speicherung der Nutzungsstatistiken
 STATS_FILE = "./config/command_usage.yaml"
@@ -31,10 +27,6 @@ def save_stats(stats):
 class CommandStats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    async def is_admin(self, interaction):
-        """Prüft, ob der Benutzer ein Admin ist."""
-        return MGMT_ID in [role.id for role in interaction.user.roles]
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
@@ -59,10 +51,6 @@ class CommandStats(commands.Cog):
     async def commandstats(self, interaction: discord.Interaction, user: discord.Member = None):
         """Zeigt an, wie oft ein Benutzer welche Befehle benutzt hat."""
         
-        if user and not await self.is_admin(interaction) and not check_permissions("stats_all", interaction.user.id, [role.id for role in interaction.user.roles]):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, die Statistiken anderer Benutzer zu sehen.", ephemeral=True)
-            return
-        
         stats = load_stats()
         user_id = str(user.id if user else interaction.user.id)
         
@@ -80,9 +68,6 @@ class CommandStats(commands.Cog):
     @app_commands.command(name="resetstats", description="Setzt die Befehlsnutzung eines Benutzers oder aller Benutzer zurück.")
     async def resetstats(self, interaction: discord.Interaction, user: discord.Member = None):
         """Setzt die Nutzungsstatistik zurück."""
-        if not await self.is_admin(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
-            return
         
         stats = load_stats()
         
@@ -95,6 +80,26 @@ class CommandStats(commands.Cog):
         
         save_stats(stats)
         await interaction.response.send_message("✅ Nutzungsstatistik wurde erfolgreich zurückgesetzt.", ephemeral=True)
+
+    @app_commands.command(name="statsreport", description="Zeigt eine Übersicht aller Befehlsnutzungsstatistiken.")
+    async def statsreport(self, interaction: discord.Interaction):
+        """Zeigt eine Übersicht der Befehlsnutzung aller Benutzer."""
+        
+        stats = load_stats()
+        
+        if not stats:
+            await interaction.response.send_message("ℹ️ Es wurden keine Befehlsstatistiken gefunden.", ephemeral=True)
+            return
+        
+        message = "📊 Übersicht der Befehlsnutzung aller Benutzer:\n"
+        
+        for user_id, usage_data in stats.items():
+            user = await self.bot.fetch_user(int(user_id))
+            message += f"\n**{user.name}**:\n"
+            for cmd, count in usage_data.items():
+                message += f"  - **{cmd}**: {count} mal\n"
+        
+        await interaction.response.send_message(message, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(CommandStats(bot))
