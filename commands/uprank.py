@@ -8,7 +8,8 @@ class Uprank(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.log_module = LogModule(bot)
-
+        PERSONAL_CHANNEL = 1097625981671448698
+        MGMT_ID = 1097648080020574260
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         # Verwende check_permissions, um die Berechtigung des Benutzers zu prüfen
