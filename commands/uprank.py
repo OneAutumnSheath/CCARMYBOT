@@ -4,15 +4,17 @@ from discord import app_commands
 from commands.log_module import LogModule
 from commands.permissions import check_permissions  # Importiere die check_permissions-Funktion
 
+# Definiere PERSONAL_CHANNEL direkt im Cog
+PERSONAL_CHANNEL = 1097625981671448698  # Ersetze dies mit der tatsächlichen Kanal-ID
+MGMT_ID = 1097648080020574260  # Beispielwert für die Management-Rolle
+
 class Uprank(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.log_module = LogModule(bot)
-        PERSONAL_CHANNEL = 1097625981671448698
-        MGMT_ID = 1097648080020574260
+
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
-        # Verwende check_permissions, um die Berechtigung des Benutzers zu prüfen
         if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
             await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
             return False  # Wenn keine Berechtigung, gebe False zurück
