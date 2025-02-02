@@ -26,12 +26,6 @@ class SetupPermissions(commands.Cog):
       #ä  set_permissions(role.id, [command_name], is_user=False)
 
         #await interaction.response.send_message(f"Berechtigungen für die Rolle {role.name} wurden gesetzt: {command_name}", ephemeral=True)
-    @app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle oder einen Benutzer")
-    async def setpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
-        if role:
-            set_permissions(role.id, [command_name], is_user=False)  # Korrektur: is_user=False
-        elif user:
-            set_permissions(user.id, [command_name], is_user=True)   # Korrektur: is_user=True
     @app_commands.command(name="checkpermissions", description="Überprüft Berechtigungen für einen Befehl")
     async def checkpermissions(self, interaction: discord.Interaction, command_name: str):
         """Überprüft, ob der Benutzer berechtigt ist, einen Befehl auszuführen."""
