@@ -1,18 +1,21 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from commands.check_permissions import check_permissions
 from commands.log_module import LogModule
+from commands.permissions import check_permissions  # Importiere die check_permissions-Funktion
+
 class Uprank(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.log_module = LogModule(bot)
+
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
+        # Verwende check_permissions, um die Berechtigung des Benutzers zu prüfen
         if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
             await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
-            return False  # Korrigiert von Ture auf False
-        return True  # Sicherstellen, dass True zurückgegeben wird, wenn Berechtigung vorhanden ist.
+            return False  # Wenn keine Berechtigung, gebe False zurück
+        return True  # Wenn Berechtigung vorhanden, gebe True zurück
 
     @app_commands.command(name="uprank", description="Erhöht den Rang eines Benutzers und fügt neue Division und/oder Dienstnummer hinzu.")
     async def uprank(
@@ -104,7 +107,10 @@ class Uprank(commands.Cog):
         except discord.DiscordException as e:
             await interaction.followup.send(f"Fehler beim Aktualisieren der Rollen: {e}", ephemeral=True)
             return
+
+        # Logge den Befehl
         await self.log_module.on_command_completion(interaction)
+
         # Bestätigung für den ausführenden Benutzer
         await interaction.followup.send(
             f"{user.mention} wurde erfolgreich vom Rang {alter_rang.mention} zum Rang {neuer_rang.mention} befördert.",
