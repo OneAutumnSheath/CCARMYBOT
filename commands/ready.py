@@ -8,7 +8,7 @@ class General(commands.Cog):
         self.bot = bot
         self.log_module = LogModule(bot)  # Initialisiere das Log-Modul innerhalb des Cogs
 
-    @app_commands.command(name="readyold", description="Überprüft, ob der Bot bereit ist.")
+    @app_commands.command(name="ready", description="Überprüft, ob der Bot bereit ist.")
     async def ready(self, interaction: discord.Interaction):
         """Zeigt an, ob der Bot bereit ist."""
         

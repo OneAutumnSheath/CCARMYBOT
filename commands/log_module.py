@@ -6,15 +6,14 @@ BOT_LOG_CHANNEL = 1097625981671448698  # Ersetze dies durch deine Log-Kanal-ID
 
 class LogModule(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot  # Setze den Bot für den Cog
+        self.bot = bot  # Speichern der Bot-Instanz, um sie im gesamten Cog zu verwenden
 
-    # Event: Logs für ausgeführte Befehle
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
-        """Event: Loggt die ausgeführten Befehle"""
+        """Event: Loggt ausgeführte Befehle."""
         log_channel = self.bot.get_channel(BOT_LOG_CHANNEL)
         if not log_channel:
-            print(f"Bot-Log-Channel mit ID {BOT_LOG_CHANNEL} nicht gefunden.")
+            print(f"Log channel with ID {BOT_LOG_CHANNEL} not found.")
             return
 
         # Informationen über den Befehl und die Argumente sammeln
@@ -37,39 +36,11 @@ class LogModule(commands.Cog):
         embed.set_footer(text=f"Benutzer-ID: {user.id}")
         embed.timestamp = discord.utils.utcnow()
 
-        # Sende die Log-Nachricht
-        await log_channel.send(embed=embed)
-
-    # Slash-Befehle loggen
-    @commands.Cog.listener()
-    async def on_app_command_completion(self, interaction, command):
-        """Event: Loggt die ausgeführten Slash-Befehle"""
-        log_channel = self.bot.get_channel(BOT_LOG_CHANNEL)
-        if not log_channel:
-            print(f"Bot-Log-Channel mit ID {BOT_LOG_CHANNEL} nicht gefunden.")
-            return
-
-        # Informationen über den Befehl und die Argumente sammeln
-        user = interaction.user
-        arguments = interaction.namespace  # Enthält die übergebenen Argumente
-
-        # Erstelle die Log-Nachricht
-        embed = discord.Embed(
-            title="Slash-Befehlsausführung",
-            description=(
-                f"**Befehl:** `{command.qualified_name}`\n"
-                f"**Ausgeführt von:** {user.mention} (`{user}`)\n"
-                f"**Argumente:**\n" +
-                "\n".join([f"`{key}`: `{value}`" for key, value in vars(arguments).items()]) +
-                "\n"
-            ),
-            color=discord.Color.green()  # Farbcode: Grün für Slash-Befehle
-        )
-        embed.set_footer(text=f"Benutzer-ID: {user.id}")
-        embed.timestamp = discord.utils.utcnow()
-
-        # Sende die Log-Nachricht
-        await log_channel.send(embed=embed)
+        try:
+            # Sende die Log-Nachricht
+            await log_channel.send(embed=embed)
+        except discord.DiscordException as e:
+            print(f"Error sending log message: {e}")
 
 # Die Setup-Funktion, um den Cog zu registrieren
 async def setup(bot):
