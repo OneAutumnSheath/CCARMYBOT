@@ -29,13 +29,18 @@ class CommandStats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def is_allowed(self, interaction, user: discord.Member):
+    def is_allowed_users(self, interaction, user: discord.Member):
         """Überprüft, ob der Benutzer die Berechtigung hat, die Statistiken eines anderen Benutzers anzusehen."""
         # Wenn der Benutzer die eigene Statistik sehen möchte, ist das erlaubt
         if user == interaction.user:
             return True
         # Wenn nicht, prüfe die Berechtigungen
         return check_permissions("stats_all", interaction.user.id, [role.id for role in interaction.user.roles])
+
+    def is_admin(self, interaction):
+        """Überprüft, ob der Benutzer Administratorrechte für 'resetstats' oder 'statsreport' hat."""
+        # Beispiel für Admin-Berechtigung: Wir prüfen, ob der Benutzer Admin-Rechte hat
+        return check_permissions("stats_admin", interaction.user.id, [role.id for role in interaction.user.roles])
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
@@ -61,7 +66,7 @@ class CommandStats(commands.Cog):
         """Zeigt an, wie oft ein Benutzer welche Befehle benutzt hat."""
         
         # Wenn ein Benutzer angegeben ist, überprüfen, ob der Zugriff erlaubt ist
-        if user and not self.is_allowed(interaction, user):
+        if user and not self.is_allowed_users(interaction, user):
             await interaction.response.send_message("❌ Du hast keine Berechtigung, die Statistiken dieses Benutzers zu sehen.", ephemeral=True)
             return
         
@@ -83,6 +88,11 @@ class CommandStats(commands.Cog):
     async def resetstats(self, interaction: discord.Interaction, user: discord.Member = None):
         """Setzt die Nutzungsstatistik zurück."""
         
+        # Berechtigungsprüfung, nur Admins oder berechtigte Benutzer dürfen diesen Befehl ausführen
+        if not self.is_admin(interaction):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+            return
+        
         stats = load_stats()
         
         if user:
@@ -98,6 +108,11 @@ class CommandStats(commands.Cog):
     @app_commands.command(name="statsreport", description="Zeigt eine Übersicht aller Befehlsnutzungsstatistiken.")
     async def statsreport(self, interaction: discord.Interaction):
         """Zeigt eine Übersicht der Befehlsnutzung aller Benutzer."""
+        
+        # Berechtigungsprüfung, nur Admins oder berechtigte Benutzer dürfen diesen Befehl ausführen
+        if not self.is_admin(interaction):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+            return
         
         stats = load_stats()
         
