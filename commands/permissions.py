@@ -19,12 +19,12 @@ class Permissions(commands.Cog):
         #    await interaction.response.send_message(f"Du bist nicht berechtigt, den Befehl '{command_name}' auszuführen.", ephemeral=True)
 
     # Slash-Befehl: setpermissions
-    #@app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle oder einen Benutzer")
-    #async def setpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
-     #   if role:
-      #      set_permissions(role.id, [command_name], is_user=False)  # Korrektur: is_user=False
-       # elif user:
-        #    set_permissions(user.id, [command_name], is_user=True)   # Korrektur: is_user=True
+  #  @app_commands.command(name="setpermissions", description="Setze Berechtigungen für eine Rolle oder einen Benutzer")
+   # async def setpermissions(self, interaction, role: discord.Role = None, user: discord.User = None, command_name: str = None):
+    #    if role:
+     #       set_permissions(role.id, [command_name], is_user=False)  # Korrektur: is_user=False
+      #  elif user:
+       #     set_permissions(user.id, [command_name], is_user=True)   # Korrektur: is_user=True
 
     # Slash-Befehl: viewpermissions
     @app_commands.command(name="viewpermissions", description="Zeigt Berechtigungen für einen Benutzer oder eine Rolle")
