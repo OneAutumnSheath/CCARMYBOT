@@ -3,7 +3,7 @@ import yaml
 import logging
 
 # Logging konfigurieren
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Verzeichnis für die Konfiguration
@@ -18,6 +18,7 @@ def load_permissions():
     try:
         with open(config_file, 'r') as f:
             permissions = yaml.safe_load(f) or {"users": {}, "roles": {}}
+            logger.debug(f"Geladene Berechtigungen: {permissions}")
             return permissions
     except FileNotFoundError:
         logger.error("Die Datei permissions.yaml wurde nicht gefunden.")
@@ -33,22 +34,26 @@ def check_permissions(permission_node, user_id, role_ids):
         logger.warning("Keine Berechtigungsdaten gefunden. Zugriff verweigert.")
         return False
 
+    logger.debug(f"Überprüfung der Berechtigung für User {user_id} mit Permission Node '{permission_node}'")
+
     # Prüfe Benutzer-spezifische Berechtigungen
     if str(user_id) in permissions.get("users", {}):
         user_perms = permissions["users"][str(user_id)]
+        logger.debug(f"Benutzerspezifische Berechtigungen für {user_id}: {user_perms}")
         if "*" in user_perms or permission_node in user_perms:
-            logger.info(f"Benutzer {user_id} hat Zugriff auf {permission_node} (direkte Benutzerberechtigung).")
+            logger.info(f"✅ Benutzer {user_id} hat Zugriff auf {permission_node} (direkte Benutzerberechtigung).")
             return True
 
     # Prüfe Rollen-spezifische Berechtigungen
     for role_id in role_ids:
         if str(role_id) in permissions.get("roles", {}):
             role_perms = permissions["roles"][str(role_id)]
+            logger.debug(f"Rollenspezifische Berechtigungen für Rolle {role_id}: {role_perms}")
             if "*" in role_perms or permission_node in role_perms:
-                logger.info(f"Benutzer {user_id} hat Zugriff auf {permission_node} über Rolle {role_id}.")
+                logger.info(f"✅ Benutzer {user_id} hat Zugriff auf {permission_node} über Rolle {role_id}.")
                 return True
 
-    logger.info(f"Zugriff auf {permission_node} für Benutzer {user_id} verweigert.")
+    logger.info(f"❌ Zugriff auf {permission_node} für Benutzer {user_id} verweigert.")
     return False
 
 # Berechtigungen für eine Rolle oder einen Benutzer setzen
