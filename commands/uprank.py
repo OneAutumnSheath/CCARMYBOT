@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-
+from permissions_logic import check_permissions
 # Beispielwerte für den persönlichen Kanal und Management-Rolle
 PERSONAL_CHANNEL = 1097625981671448698
 MGMT_ID = 1097648080020574260
