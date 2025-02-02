@@ -4,7 +4,6 @@ import os
 import sys
 from dotenv import load_dotenv
 import yaml
-import asyncio
 
 # Verzeichnis und Dateipfad für die Konfiguration
 config_dir = './config'
@@ -72,8 +71,11 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Füge den 'commands' Ordner zum sys.path hinzu
 sys.path.insert(0, os.path.abspath('./commands'))
 
-# Lade alle Cogs und Log-Modul asynchron
-async def load_modules():
+@bot.event
+async def on_ready():
+    log(f"Bot ist bereit! Eingeloggt als {bot.user} (ID: {bot.user.id})")
+    print(f"Bot ist bereit! Eingeloggt als {bot.user} (ID: {bot.user.id})")
+    
     # Cogs asynchron laden
     for filename in os.listdir('./commands'):
         if filename.endswith('.py') and filename != "__init__.py":
@@ -88,11 +90,5 @@ async def load_modules():
     except Exception as e:
         log(f"Fehler bei der globalen Synchronisierung: {e}")  # Fehler im verbose-Modus anzeigen
 
-# Asynchrone main Funktion, die den Bot startet
-async def main():
-    # Starte den Bot
-    await bot.start(token)
-
-# Starte den Bot mit asyncio.run()
-if __name__ == "__main__":
-    asyncio.run(main())
+# Bot starten
+bot.run(token)
