@@ -8,7 +8,7 @@ import os
 MGMT_ID = 1097648080020574260
 
 # Datei für die Speicherung der Nutzungsstatistiken
-STATS_FILE = "command_usage.yaml"
+STATS_FILE = "./config/command_usage.yaml"
 
 def load_stats():
     """Lädt die gespeicherten Nutzungsdaten aus der YAML-Datei. Erstellt die Datei, falls sie nicht existiert."""
