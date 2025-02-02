@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import yaml
 import os
+from permissions_logic import check_permissions  # Importiere die Berechtigungsprüfung
 
 # Admin-Rollen-ID (Management ID für Berechtigungsprüfung)
 MGMT_ID = 1097648080020574260
@@ -57,8 +58,9 @@ class CommandStats(commands.Cog):
     @app_commands.command(name="commandstats", description="Zeigt die Befehlsnutzung eines Benutzers an.")
     async def commandstats(self, interaction: discord.Interaction, user: discord.Member = None):
         """Zeigt an, wie oft ein Benutzer welche Befehle benutzt hat."""
-        if not await self.is_admin(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
+        
+        if user and not await self.is_admin(interaction) and not check_permissions("stats_all", interaction.user.id, [role.id for role in interaction.user.roles]):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung, die Statistiken anderer Benutzer zu sehen.", ephemeral=True)
             return
         
         stats = load_stats()
