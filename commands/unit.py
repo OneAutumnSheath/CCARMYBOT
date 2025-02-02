@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions  # Berechtigungsprüfung
-
+from commands.log_module import LogModule
 # Channel und Rollen-IDs
 UNIT_CHANNEL = 1173700352403591189  # Kanal-ID für Unit Update Ankündigungen
 MGMT_ID = 1097648080020574260  # Management-ID für die Ankündigungen
@@ -19,7 +19,7 @@ async def is_allowed(interaction: discord.Interaction):
 class Unit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.log_module = LogModule(bot)
     # Slash-Befehl: unit-eintritt
     @app_commands.command(name="unit-eintritt", description="Lässt einen Benutzer einer Unit beitreten.")
     async def unit_eintritt(
@@ -72,7 +72,7 @@ class Unit(commands.Cog):
             await channel.send(embed=embed)
         else:
             await interaction.response.send_message("Ankündigungskanal nicht gefunden.", ephemeral=True)
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await interaction.response.send_message(f"{user.mention} wurde erfolgreich der Unit {unit.mention} zugefügt.", ephemeral=True)
 
@@ -121,7 +121,7 @@ class Unit(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Entfernen der Rollen: {e}", ephemeral=True)
             return
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await interaction.response.send_message(
             f"{user.mention} wurde erfolgreich aus der Unit {unit.mention} entfernt, und die angegebenen Rollen wurden ebenfalls entfernt.",
@@ -198,7 +198,7 @@ class Unit(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Bearbeiten der Rollen: {e}", ephemeral=True)
             return
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await interaction.response.send_message(
             f"{user.mention} wurde erfolgreich zum Vollwertigen Mitglied der Unit {unit.mention} befördert. "
@@ -277,7 +277,7 @@ class Unit(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Degradieren des Benutzers: {e}", ephemeral=True)
             return
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await interaction.response.send_message(
             f"{user.mention} wurde erfolgreich vom Posten des {alter_posten.mention} degradiert.",

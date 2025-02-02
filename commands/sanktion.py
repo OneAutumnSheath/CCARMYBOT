@@ -2,12 +2,15 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions
+from commands.log_module import LogModule
+
 # Beispielwert für den Sanktions-Kanal
 SANKTION_CHANNEL = 1143288582136664225
 
 class Sanktion(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.log_module = LogModule(bot)
 
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
@@ -66,7 +69,7 @@ class Sanktion(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
             return
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigungsnachricht für den Ausführenden
         await interaction.response.send_message(
             f"Sanktion für {user.mention} wurde erfolgreich erstellt und im entsprechenden Kanal angekündigt.\n"

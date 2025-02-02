@@ -2,13 +2,14 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions  # Importiere die Berechtigungslogik
-
+from commands.log_module import LogModule
 PERSONAL_CHANNEL = 1097625981671448698  # Kanal-ID, in dem die Ankündigung gemacht wird
 MGMT_ID = 1097648080020574260  # Management ID für Ankündigungen
 
 class Derank(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.log_module = LogModule(bot)
 
     # Slash-Befehl: einstellen
 
@@ -105,6 +106,8 @@ class Derank(commands.Cog):
             await interaction.response.send_message(f"Fehler beim Aktualisieren der Rollen: {e}", ephemeral=True)
             return
 
+        await self.log_module.on_command_completion(interaction)
+        
         # Bestätigung für den ausführenden Benutzer
         await interaction.response.send_message(
             f"{user.mention} wurde erfolgreich vom Rang {alter_rang.mention} zum Rang {neuer_rang.mention} herabgestuft.",

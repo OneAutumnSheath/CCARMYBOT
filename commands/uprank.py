@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-
+from commands.log_module import LogModule
 class Uprank(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.log_module = LogModule(bot)
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
@@ -103,7 +103,7 @@ class Uprank(commands.Cog):
         except discord.DiscordException as e:
             await interaction.followup.send(f"Fehler beim Aktualisieren der Rollen: {e}", ephemeral=True)
             return
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await interaction.followup.send(
             f"{user.mention} wurde erfolgreich vom Rang {alter_rang.mention} zum Rang {neuer_rang.mention} befördert.",
