@@ -15,7 +15,8 @@ class Kuendingen(commands.Cog):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         if not check_permissions("personal", interaction.user.id, [role.id for role in interaction.user.roles]):
             await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
-            return True
+            return False  # Korrigiert von Ture auf False
+        return True  # Sicherstellen, dass True zurückgegeben wird, wenn Berechtigung vorhanden ist.
 
     @app_commands.command(name="kuendigen", description="Erstellt eine Kündigung für einen Benutzer mit angegebenem Grund.")
     async def kuendigen(self, interaction: discord.Interaction, user: discord.Member, grund: str):
@@ -60,4 +61,4 @@ class Kuendingen(commands.Cog):
 
 # Setup-Funktion zum Hinzufügen des Cogs
 async def setup(bot):
-    await bot.add_cog(Kuendingen(bot))  # Hier wird der HumanResources-Cog dem Bot hinzugefügt
+    await bot.add_cog(Kuendingen(bot))  # Hier wird der Kuendingen-Cog dem Bot hinzugefügt
