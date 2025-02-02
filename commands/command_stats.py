@@ -16,9 +16,6 @@ def load_stats():
         with open(STATS_FILE, "w") as f:
             yaml.dump({}, f)  # Leere Datei initialisieren
         return {}
-    """Lädt die gespeicherten Nutzungsdaten aus der YAML-Datei."""
-    if not os.path.exists(STATS_FILE):
-        return {}
     try:
         with open(STATS_FILE, "r") as f:
             return yaml.safe_load(f) or {}
@@ -39,11 +36,14 @@ class CommandStats(commands.Cog):
         return MGMT_ID in [role.id for role in interaction.user.roles]
 
     @commands.Cog.listener()
-    async def on_command_completion(self, ctx):
-        """Erhöht die Nutzungszahl eines Befehls, wenn er erfolgreich ausgeführt wurde."""
+    async def on_interaction(self, interaction: discord.Interaction):
+        """Erhöht die Nutzungszahl eines Slash-Befehls, wenn er erfolgreich ausgeführt wurde."""
+        if not interaction.command:
+            return  # Ignoriere Interaktionen, die keine Befehle sind
+        
         stats = load_stats()
-        user_id = str(ctx.author.id)
-        command_name = ctx.command.name
+        user_id = str(interaction.user.id)
+        command_name = interaction.command.name
         
         if user_id not in stats:
             stats[user_id] = {}
