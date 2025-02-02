@@ -258,7 +258,7 @@ class Unit(commands.Cog):
         embed.set_footer(text="U.S. ARMY Management")
 
         # Sende die Nachricht in den festgelegten Kanal (Unit Update Kanal)
-        channel = bot.get_channel(1173700352403591189)  # ID des Unit Update Kanals
+        channel = self.bot.get_channel(1173700352403591189)  # ID des Unit Update Kanals
         if channel:
             await channel.send(embed=embed)
         else:
