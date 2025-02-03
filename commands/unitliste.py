@@ -40,8 +40,11 @@ class UnitManager(commands.Cog):
         channel_id = unit["channel_id"]
         unit_members = unit["members"]
 
+        # Mitglieder nach der Sortier-ID sortieren
+        sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])
+
         # Mitglieder der Einheit abrufen
-        members = [await self.bot.fetch_user(int(member["member_id"])) for member in unit_members]  # Zugriff auf "member_id"
+        members = [await self.bot.fetch_user(int(member["member_id"])) for member in sorted_members]  # Zugriff auf "member_id"
         member_mentions = [member.mention for member in members]
 
         # Channel finden und Nachricht senden/bearbeiten
