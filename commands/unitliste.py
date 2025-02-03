@@ -56,6 +56,7 @@ class UnitManager(commands.Cog):
             # Falls keine Nachricht existiert, sende eine neue
             await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
 
+
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
     async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
         """Setzt den Channel für eine Einheit."""
