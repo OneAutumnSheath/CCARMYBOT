@@ -155,6 +155,12 @@ class UnitManager(commands.Cog):
             await interaction.response.send_message(f"Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions), ephemeral=True)
         else:
             await interaction.response.send_message(f"Es gibt keine Mitglieder in der Einheit {unit_name}.", ephemeral=True)
-
+    @app_commands.command(name="resendunitmessage", description="Sendet die Mitgliederliste der Einheit erneut.")
+    async def resendunitmessage(self, interaction: discord.Interaction, unit_name: str):
+        """Sendet die Mitgliederliste der Einheit erneut."""
+        # Aufruf der Methode zum Aktualisieren der Liste
+        await self.update_unit_list(unit_name)
+        
+        await interaction.response.send_message(f"Die Mitgliederliste der Einheit {unit_name} wurde erneut gesendet.", ephemeral=True)
 async def setup(bot):
     await bot.add_cog(UnitManager(bot))
