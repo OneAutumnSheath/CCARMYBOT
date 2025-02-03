@@ -52,11 +52,9 @@ class UnitManager(commands.Cog):
                 # Bearbeite die letzte Nachricht
                 await message.edit(content=f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
                 return  # Nachricht gefunden und bearbeitet, daher zurückkehren
-            
+        
             # Falls keine Nachricht existiert, sende eine neue
             await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
-
-
 
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
     async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
@@ -75,6 +73,14 @@ class UnitManager(commands.Cog):
 
         await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
 
+    @app_commands.command(name="resendunitmessage", description="Sendet die Mitgliederliste der Einheit erneut.")
+    async def resendunitmessage(self, interaction: discord.Interaction, unit_name: str):
+        """Sendet die Mitgliederliste der Einheit erneut."""
+        # Aufruf der Methode zum Aktualisieren der Liste
+        await self.update_unit_list(unit_name)
+        
+        await interaction.response.send_message(f"Die Mitgliederliste der Einheit {unit_name} wurde erneut gesendet.", ephemeral=True)
+
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
     async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None):
         """Fügt ein Mitglied zu einer bestimmten Einheit hinzu und weist ihm einen Rang zu."""
@@ -85,7 +91,7 @@ class UnitManager(commands.Cog):
             units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": []}
         
         # Prüfen, ob das Mitglied bereits in der Einheit ist
-        if str(member.id) in units["units"][unit_name]["members"]:
+        if str(member.id) in [m["member_id"] for m in units["units"][unit_name]["members"]]:
             await interaction.response.send_message(f"{member.mention} ist bereits in der Einheit {unit_name}.", ephemeral=True)
             return
         
