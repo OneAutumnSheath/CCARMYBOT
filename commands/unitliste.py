@@ -73,14 +73,6 @@ class UnitManager(commands.Cog):
 
         await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
 
-    @app_commands.command(name="resendunitmessage", description="Sendet die Mitgliederliste der Einheit erneut.")
-    async def resendunitmessage(self, interaction: discord.Interaction, unit_name: str):
-        """Sendet die Mitgliederliste der Einheit erneut."""
-        # Aufruf der Methode zum Aktualisieren der Liste
-        await self.update_unit_list(unit_name)
-        
-        await interaction.response.send_message(f"Die Mitgliederliste der Einheit {unit_name} wurde erneut gesendet.", ephemeral=True)
-
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
     async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None):
         """Fügt ein Mitglied zu einer bestimmten Einheit hinzu und weist ihm einen Rang zu."""
@@ -90,10 +82,13 @@ class UnitManager(commands.Cog):
         if unit_name not in units["units"]:
             units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": []}
         
-        # Prüfen, ob das Mitglied bereits in der Einheit ist
-        if str(member.id) in [m["member_id"] for m in units["units"][unit_name]["members"]]:
-            await interaction.response.send_message(f"{member.mention} ist bereits in der Einheit {unit_name}.", ephemeral=True)
-            return
+        # Überprüfen, ob ein Mitglied mit der gleichen Sortier-ID existiert und verschiebe es
+        if sort_id is not None:
+            for i, member_data in enumerate(units["units"][unit_name]["members"]):
+                if member_data["sort_id"] == sort_id:
+                    # Verschiebe das bestehende Mitglied nach unten
+                    units["units"][unit_name]["members"][i]["sort_id"] = len(units["units"][unit_name]["members"]) + 1  # Erhöht die Sortier-ID
+                    break
         
         # Mitglied zur Einheit hinzufügen und Rang zuweisen
         units["units"][unit_name]["members"].append({
