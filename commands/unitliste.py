@@ -43,21 +43,25 @@ class UnitManager(commands.Cog):
         # Mitglieder nach der Sortier-ID sortieren
         sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])
 
-        # Mitglieder der Einheit abrufen
-        members = [await self.bot.fetch_user(int(member["member_id"])) for member in sorted_members]  # Zugriff auf "member_id"
-        member_mentions = [member.mention for member in members]
-
-        # Channel finden und Nachricht senden/bearbeiten
+        # Channel finden
         channel = self.bot.get_channel(channel_id)
         if channel:
-            # Überprüfen, ob bereits eine Nachricht existiert
-            async for message in channel.history(limit=1):
-                # Bearbeite die letzte Nachricht
-                await message.edit(content=f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
-                return  # Nachricht gefunden und bearbeitet, daher zurückkehren
-        
-            # Falls keine Nachricht existiert, sende eine neue
-            await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
+            # Embed-Nachricht erstellen
+            embed = discord.Embed(title="Unit Mitglieder", color=discord.Color.blue())
+            
+            # Mitglieder zu Embed hinzufügen
+            for member_data in sorted_members:
+                member = await self.bot.fetch_user(int(member_data["member_id"]))
+                rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])  # Rang anhand der ID holen
+                
+                # Füge ein Feld für jedes Mitglied hinzu (Rank und User)
+                embed.add_field(name=rank.name, value=member.mention, inline=False)
+
+            # Footer hinzufügen
+            embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
+
+            # Nachricht senden/bearbeiten
+            await channel.send(embed=embed)
 
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
     async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
