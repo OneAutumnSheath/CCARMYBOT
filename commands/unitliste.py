@@ -60,7 +60,13 @@ class UnitManager(commands.Cog):
             # Footer hinzufügen
             embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
 
-            # Nachricht senden/bearbeiten
+            # Überprüfen, ob bereits eine Nachricht existiert, die die Mitgliederliste enthält
+            async for message in channel.history(limit=1):
+                if message.embeds:  # Wenn die Nachricht ein Embed hat, ist es die Mitgliederliste
+                    # Bearbeite die bestehende Nachricht
+                    await message.edit(embed=embed)
+                    return  # Nach der Bearbeitung beenden
+            # Falls keine Nachricht existiert, sende eine neue
             await channel.send(embed=embed)
 
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
