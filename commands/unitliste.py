@@ -77,7 +77,7 @@ class UnitManager(commands.Cog):
         await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
-    async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None):
+    async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None):
         """Fügt ein Mitglied zu einer bestimmten Einheit hinzu und weist ihm einen Rang zu."""
         units = load_units()
 
@@ -97,7 +97,8 @@ class UnitManager(commands.Cog):
         units["units"][unit_name]["members"].append({
             "member_id": str(member.id),
             "rank": rank.id,  # Rolle als ID speichern
-            "sort_id": sort_id or len(units["units"][unit_name]["members"])  # Wenn keine Sortier-ID angegeben, wird das Mitglied ans Ende gesetzt
+            "sort_id": sort_id or len(units["units"][unit_name]["members"]),  # Wenn keine Sortier-ID angegeben, wird das Mitglied ans Ende gesetzt
+            "rank_sort_id": rank_sort_id or len(units["units"][unit_name]["members"])  # Rang-SortID hinzufügen
         })
         
         # Mitglied die Rolle zuweisen
@@ -155,6 +156,7 @@ class UnitManager(commands.Cog):
             await interaction.response.send_message(f"Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions), ephemeral=True)
         else:
             await interaction.response.send_message(f"Es gibt keine Mitglieder in der Einheit {unit_name}.", ephemeral=True)
+
     @app_commands.command(name="resendunitmessage", description="Sendet die Mitgliederliste der Einheit erneut.")
     async def resendunitmessage(self, interaction: discord.Interaction, unit_name: str):
         """Sendet die Mitgliederliste der Einheit erneut."""
@@ -162,5 +164,6 @@ class UnitManager(commands.Cog):
         await self.update_unit_list(unit_name)
         
         await interaction.response.send_message(f"Die Mitgliederliste der Einheit {unit_name} wurde erneut gesendet.", ephemeral=True)
+
 async def setup(bot):
     await bot.add_cog(UnitManager(bot))
