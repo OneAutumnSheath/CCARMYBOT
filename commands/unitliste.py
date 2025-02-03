@@ -38,10 +38,10 @@ class UnitManager(commands.Cog):
 
         unit = units["units"][unit_name]
         channel_id = unit["channel_id"]
-        member_ids = unit["members"]
+        unit_members = unit["members"]
 
         # Mitglieder der Einheit abrufen
-        members = [await self.bot.fetch_user(int(member_id)) for member_id in member_ids]
+        members = [await self.bot.fetch_user(int(member["member_id"])) for member in unit_members]  # Zugriff auf "member_id"
         member_mentions = [member.mention for member in members]
 
         # Channel finden und Nachricht senden/bearbeiten
@@ -52,9 +52,10 @@ class UnitManager(commands.Cog):
                 # Bearbeite die letzte Nachricht
                 await message.edit(content=f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
                 return  # Nachricht gefunden und bearbeitet, daher zurückkehren
-        
+            
             # Falls keine Nachricht existiert, sende eine neue
             await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
+
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
     async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
         """Setzt den Channel für eine Einheit."""
