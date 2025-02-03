@@ -55,6 +55,22 @@ class UnitManager(commands.Cog):
         
             # Falls keine Nachricht existiert, sende eine neue
             await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
+    @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
+    async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
+        """Setzt den Channel für eine Einheit."""
+        units = load_units()
+
+        # Überprüfen, ob die Einheit existiert, oder erstelle sie
+        if unit_name not in units["units"]:
+            units["units"][unit_name] = {"channel_id": channel.id, "members": []}
+        else:
+            # Wenn die Einheit schon existiert, aktualisiere die Channel-ID
+            units["units"][unit_name]["channel_id"] = channel.id
+
+        # Speichern der Änderungen
+        save_units(units)
+
+        await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
     async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None):
