@@ -49,14 +49,14 @@ class UnitManager(commands.Cog):
         channel = self.bot.get_channel(channel_id)
         if channel:
             # Überprüfen, ob bereits eine Nachricht existiert
-            messages = await channel.history(limit=1).flatten()
-            if messages:
+            async for message in channel.history(limit=1):
                 # Bearbeite die letzte Nachricht
-                msg = messages[0]
-                await msg.edit(content=f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
-            else:
-                # Sende eine neue Nachricht
-                await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
+                await message.edit(content=f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
+                return  # Nachricht gefunden und bearbeitet, daher zurückkehren
+            
+            # Falls keine Nachricht existiert, sende eine neue
+            await channel.send(f"📊 Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions))
+
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu.")
     async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member):
