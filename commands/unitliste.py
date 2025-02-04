@@ -39,23 +39,28 @@ class UnitManager(commands.Cog):
         unit = units["units"][unit_name]
         channel_id = unit["channel_id"]
         unit_members = unit["members"]
-
-        # Mitglieder nach der Sortier-ID sortieren
-        sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])
+        unit_role_id = unit["role_id"]  # Die gespeicherte Role-ID für die Unit
 
         # Channel finden
         channel = self.bot.get_channel(channel_id)
         if channel:
             # Embed-Nachricht erstellen
-            embed = discord.Embed(title="Unit Mitglieder", color=discord.Color.blue())
-            
+            embed = discord.Embed(title=f"Mitglieder der Einheit {unit_name}", color=discord.Color.blue())
+
+            # Referenziere die Unit-Rolle (Unit als markierbare Rolle)
+            unit_role = discord.utils.get(self.bot.guilds[0].roles, id=unit_role_id)
+            if unit_role:
+                embed.add_field(name=f"Unit: {unit_role.name}", value=f"{unit_role.mention}", inline=False)
+            else:
+                embed.add_field(name="Unit: Unbekannt", value="Unbekannter Rang", inline=False)
+
             # Mitglieder zu Embed hinzufügen
-            for member_data in sorted_members:
+            for member_data in unit_members:
                 member = await self.bot.fetch_user(int(member_data["member_id"]))
                 rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])  # Rang anhand der ID holen
                 
                 # Füge ein Feld für jedes Mitglied hinzu (Rank und User)
-                embed.add_field(name=rank.name, value=member.mention, inline=False)
+                embed.add_field(name=rank.name if rank else "Unbekannter Rang", value=member.mention, inline=False)
 
             # Footer hinzufügen
             embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
@@ -76,11 +81,11 @@ class UnitManager(commands.Cog):
 
         # Überprüfen, ob die Einheit existiert, oder erstelle sie
         if unit_name not in units["units"]:
-            units["units"][unit_name] = {"channel_id": channel.id, "rank_id": rank.id, "members": []}
+            units["units"][unit_name] = {"channel_id": channel.id, "role_id": rank.id, "members": []}
         else:
             # Wenn die Einheit schon existiert, aktualisiere die Channel-ID und Rank
             units["units"][unit_name]["channel_id"] = channel.id
-            units["units"][unit_name]["rank_id"] = rank.id
+            units["units"][unit_name]["role_id"] = rank.id
 
         # Speichern der Änderungen
         save_units(units)
@@ -94,7 +99,7 @@ class UnitManager(commands.Cog):
 
         # Wenn die Einheit nicht existiert, erstelle sie
         if unit_name not in units["units"]:
-            units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": [], "rank_id": rank.id}
+            units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": [], "role_id": rank.id}
         
         # Überprüfen, ob ein Mitglied mit der gleichen Sortier-ID existiert und verschiebe es
         if sort_id is not None:
