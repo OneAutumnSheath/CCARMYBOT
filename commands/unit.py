@@ -5,7 +5,7 @@ from permissions_logic import check_permissions  # Berechtigungsprüfung
 from commands.log_module import LogModule
 from unitliste import load_units
 from unitliste import save_units
-from unitliste import update_unit_list
+from unitliste import update_
 # Channel und Rollen-IDs
 UNIT_CHANNEL = 1173700352403591189  # Kanal-ID für Unit Update Ankündigungen
 MGMT_ID = 1097648080020574260  # Management-ID für die Ankündigungen
