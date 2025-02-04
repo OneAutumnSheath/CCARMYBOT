@@ -70,21 +70,22 @@ class UnitManager(commands.Cog):
             await channel.send(embed=embed)
 
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
-    async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
-        """Setzt den Channel für eine Einheit."""
+    async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel, rank: discord.Role):
+        """Setzt den Channel und die Rolle für eine Einheit."""
         units = load_units()
 
         # Überprüfen, ob die Einheit existiert, oder erstelle sie
         if unit_name not in units["units"]:
-            units["units"][unit_name] = {"channel_id": channel.id, "members": []}
+            units["units"][unit_name] = {"channel_id": channel.id, "rank_id": rank.id, "members": []}
         else:
-            # Wenn die Einheit schon existiert, aktualisiere die Channel-ID
+            # Wenn die Einheit schon existiert, aktualisiere die Channel-ID und Rank
             units["units"][unit_name]["channel_id"] = channel.id
+            units["units"][unit_name]["rank_id"] = rank.id
 
         # Speichern der Änderungen
         save_units(units)
 
-        await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
+        await interaction.response.send_message(f"Die Channel-ID und der Rank für die Einheit {unit_name} wurden auf {channel.mention} und {rank.name} gesetzt.", ephemeral=True)
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
     async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None):
@@ -93,7 +94,7 @@ class UnitManager(commands.Cog):
 
         # Wenn die Einheit nicht existiert, erstelle sie
         if unit_name not in units["units"]:
-            units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": []}
+            units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": [], "rank_id": rank.id}
         
         # Überprüfen, ob ein Mitglied mit der gleichen Sortier-ID existiert und verschiebe es
         if sort_id is not None:
