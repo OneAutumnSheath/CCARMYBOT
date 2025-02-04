@@ -1,10 +1,10 @@
 from discord.ext import commands
 import discord
-
+from commands.log_module import LogModule
 class Aufstellung(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.log_module = LogModule(bot)
     @commands.hybrid_command(name="aufstellung", description="Erstellt eine Aufstellung für einen Benutzer und sendet sie im Aufstellungs-Kanal.")
     async def aufstellung(self, ctx, user: discord.Member, wann: str, uhrzeit: str, position: discord.Role):
         # Rollenabfrage: Der Befehl darf nur von bestimmten Rollen ausgeführt werden
@@ -30,7 +30,7 @@ class Aufstellung(commands.Cog):
             return
 
         await channel.send(message)
-
+        await self.log_module.on_command_completion(interaction)
         # Bestätigung für den ausführenden Benutzer
         await ctx.send(
             f"Die Aufstellung für {user.mention} wurde erfolgreich erstellt und im Aufstellungs-Kanal gesendet.",

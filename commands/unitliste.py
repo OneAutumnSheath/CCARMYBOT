@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import yaml
 import os
-
+from commands.log_module import LogModule
 # Die Datei für die Speicherung der Mitglieder und Einheiten
 UNIT_FILE = "./config/units.yaml"
 
@@ -27,7 +27,7 @@ def save_units(units):
 class UnitManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.log_module = LogModule(bot)
     async def update_unit_list(self, unit_name: str):
         """Aktualisiert die Mitgliederliste im spezifizierten Channel für die Einheit."""
         units = load_units()
@@ -88,7 +88,7 @@ class UnitManager(commands.Cog):
 
         # Speichern der Änderungen
         save_units(units)
-
+        await self.log_module.on_command_completion(interaction)
         await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
@@ -123,7 +123,7 @@ class UnitManager(commands.Cog):
 
         # Aktualisiere die Mitgliederliste im Channel der Einheit
         await self.update_unit_list(unit_name)
-        
+        await self.log_module.on_command_completion(interaction)
         await interaction.response.send_message(f"{member.mention} wurde erfolgreich zur Einheit {unit_name} hinzugefügt, der Rang {rank.name} zugewiesen und der Zusatztext '{additional_text}' hinzugefügt.", ephemeral=True)
 
     @app_commands.command(name="removemember", description="Entfernt ein Mitglied aus einer Einheit.")
@@ -149,7 +149,7 @@ class UnitManager(commands.Cog):
 
         # Aktualisiere die Mitgliederliste im Channel der Einheit
         await self.update_unit_list(unit_name)
-        
+        await self.log_module.on_command_completion(interaction)
         await interaction.response.send_message(f"{member.mention} wurde erfolgreich aus der Einheit {unit_name} entfernt.", ephemeral=True)
 
     @app_commands.command(name="unitmembers", description="Zeigt alle Mitglieder einer Einheit an.")
@@ -178,7 +178,7 @@ class UnitManager(commands.Cog):
         """Sendet die Mitgliederliste der Einheit erneut."""
         # Aufruf der Methode zum Aktualisieren der Liste
         await self.update_unit_list(unit_name)
-        
+        await self.log_module.on_command_completion(interaction)
         await interaction.response.send_message(f"Die Mitgliederliste der Einheit {unit_name} wurde erneut gesendet.", ephemeral=True)
 
 async def setup(bot):
