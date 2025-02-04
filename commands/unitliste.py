@@ -28,18 +28,6 @@ class UnitManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def is_allowed(self, interaction: discord.Interaction):
-        """
-        Diese Funktion überprüft, ob der Benutzer die Berechtigung hat,
-        eine Aktion durchzuführen. (Die Logik wird hier nach Bedarf eingefügt)
-        """
-    async def is_allowed(self, interaction):
-        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
-        if not check_permissions("unitliste", interaction.user.id, [role.id for role in interaction.user.roles]):
-            await interaction.response.send_message("Du hast keine Berechtigung, diesen Befehl auszuführen.", ephemeral=True)
-            return False  # Korrigiert von Ture auf False
-        return True  # Sicherstellen, dass True zurückgegeben wird, wenn Berechtigung vorhanden ist.
-
     async def update_unit_list(self, unit_name: str):
         """Aktualisiert die Mitgliederliste im spezifizierten Channel für die Einheit."""
         units = load_units()
@@ -89,10 +77,6 @@ class UnitManager(commands.Cog):
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
     async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel):
         """Setzt den Channel für eine Einheit."""
-        if not self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diese Aktion durchzuführen.", ephemeral=True)
-            return
-
         units = load_units()
 
         # Überprüfen, ob die Einheit existiert, oder erstelle sie
@@ -110,21 +94,11 @@ class UnitManager(commands.Cog):
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
     async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None, additional_text: str = ""):
         """Fügt ein Mitglied zu einer bestimmten Einheit hinzu und weist ihm einen Rang zu."""
-        if not self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diese Aktion durchzuführen.", ephemeral=True)
-            return
-
         units = load_units()
 
         # Wenn die Einheit nicht existiert, erstelle sie
         if unit_name not in units["units"]:
             units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": []}
-        
-        # Überprüfen, ob das Mitglied bereits in der Einheit existiert
-        for member_data in units["units"][unit_name]["members"]:
-            if member_data["member_id"] == str(member.id):
-                await interaction.response.send_message(f"{member.mention} ist bereits Mitglied der Einheit {unit_name}.", ephemeral=True)
-                return
         
         # Überprüfen, ob ein Mitglied mit der gleichen Sortier-ID existiert und verschiebe es
         if sort_id is not None:
@@ -155,10 +129,6 @@ class UnitManager(commands.Cog):
     @app_commands.command(name="removemember", description="Entfernt ein Mitglied aus einer Einheit.")
     async def removemember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member):
         """Entfernt ein Mitglied aus einer bestimmten Einheit."""
-        if not self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diese Aktion durchzuführen.", ephemeral=True)
-            return
-
         units = load_units()
 
         # Überprüfen, ob die Einheit existiert
@@ -185,10 +155,6 @@ class UnitManager(commands.Cog):
     @app_commands.command(name="unitmembers", description="Zeigt alle Mitglieder einer Einheit an.")
     async def unitmembers(self, interaction: discord.Interaction, unit_name: str):
         """Zeigt alle Mitglieder einer bestimmten Einheit an."""
-        if not self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diese Aktion durchzuführen.", ephemeral=True)
-            return
-        
         units = load_units()
 
         # Überprüfen, ob die Einheit existiert
@@ -210,10 +176,6 @@ class UnitManager(commands.Cog):
     @app_commands.command(name="resendunitmessage", description="Sendet die Mitgliederliste der Einheit erneut.")
     async def resendunitmessage(self, interaction: discord.Interaction, unit_name: str):
         """Sendet die Mitgliederliste der Einheit erneut."""
-        if not self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung, diese Aktion durchzuführen.", ephemeral=True)
-            return
-        
         # Aufruf der Methode zum Aktualisieren der Liste
         await self.update_unit_list(unit_name)
         
