@@ -56,10 +56,11 @@ class UnitManager(commands.Cog):
                 rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])
 
                 # Überprüfen, ob der Rang existiert und den Rangnamen als Text einfügen
+                additional_text = member_data.get("additional_text", "")  # Standardmäßig leer, falls nicht gesetzt
                 if rank:
-                    embed.add_field(name=rank.name, value=f"{member.mention} {member_data['additional_text']}", inline=False)
+                    embed.add_field(name=rank.name, value=f"{member.mention} {additional_text}", inline=False)
                 else:
-                    embed.add_field(name="Unbekannter Rang", value=f"{member.mention} {member_data['additional_text']}", inline=False)
+                    embed.add_field(name="Unbekannter Rang", value=f"{member.mention} {additional_text}", inline=False)
 
             # Footer hinzufügen
             embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
