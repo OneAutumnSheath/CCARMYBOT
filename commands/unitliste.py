@@ -55,7 +55,7 @@ class UnitManager(commands.Cog):
                 # Rang anhand der ID holen
                 rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])
 
-                # Füge das Mitglied als Rolle und Benutzer (mentionable) hinzu
+                # Überprüfen, ob der Rang existiert und die Rolle mentionable ist
                 if rank:
                     embed.add_field(name=rank.mention, value=member.mention, inline=False)
                 else:
