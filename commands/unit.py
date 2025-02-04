@@ -68,7 +68,27 @@ class Unit(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
             return
+        
+        units = load_units()
 
+        # Wenn die Einheit nicht existiert, erstelle sie
+        if unit_name not in units["units"]:
+            units["units"][unit_name] = {"channel_id": interaction.channel_id, "members": [], "rank_id": rank.id}
+        
+        # Mitglied zur Einheit hinzufügen und Rang zuweisen
+        units["units"][unit_name]["members"].append({
+            "member_id": str(member.id),
+            "rank": rank.id,  # Rolle als ID speichern
+            "sort_id": sort_id or len(units["units"][unit_name]["members"]),  # Wenn keine Sortier-ID angegeben, wird das Mitglied ans Ende gesetzt
+            "rank_sort_id": rank_sort_id or len(units["units"][unit_name]["members"])  # Rang-SortID hinzufügen
+        })
+        
+        # Mitglied die Rolle zuweisen
+        await member.add_roles(rank)
+        save_units(units)
+
+        # Aktualisiere die Mitgliederliste im Channel der Einheit
+        await self.update_unit_list(unit_name)
         # Sende die Nachricht in den festgelegten Kanal
         channel = interaction.guild.get_channel(UNIT_CHANNEL)
         if channel:
