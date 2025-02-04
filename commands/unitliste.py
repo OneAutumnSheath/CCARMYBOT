@@ -1,3 +1,76 @@
+import discord
+from discord.ext import commands
+from discord import app_commands
+import yaml
+import os
+from commands.log_module import LogModule
+
+# Die Datei für die Speicherung der Mitglieder und Einheiten
+UNIT_FILE = "./config/units.yaml"
+
+def load_units():
+    """Lädt die gespeicherten Einheiten und Mitglieder aus der YAML-Datei oder erstellt die Datei, wenn sie nicht existiert."""
+    if not os.path.exists(UNIT_FILE):
+        with open(UNIT_FILE, "w") as f:
+            yaml.dump({"units": {}}, f)  # Leere Datei initialisieren
+        return {"units": {}}
+    try:
+        with open(UNIT_FILE, "r") as f:
+            return yaml.safe_load(f) or {"units": {}}
+    except yaml.YAMLError:
+        return {"units": {}}
+
+def save_units(units):
+    """Speichert die Einheiten und Mitglieder in der YAML-Datei."""
+    with open(UNIT_FILE, "w") as f:
+        yaml.dump(units, f)
+
+class UnitManager(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.log_module = LogModule(bot)
+
+    async def update_unit_list(self, unit_name: str):
+        """Aktualisiert die Mitgliederliste im spezifizierten Channel für die Einheit."""
+        units = load_units()
+
+        # Überprüfen, ob die Einheit existiert
+        if unit_name not in units["units"]:
+            return
+
+        unit = units["units"][unit_name]
+        channel_id = unit["channel_id"]
+        unit_members = unit["members"]
+
+        # Mitglieder nach der Sortier-ID sortieren (nur nach sort_id, ohne den Rang zu beachten)
+        sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])
+
+        # Channel finden
+        channel = self.bot.get_channel(channel_id)
+        if channel:
+            # Embed-Nachricht erstellen
+            embed = discord.Embed(title="Unit Mitglieder", color=discord.Color.blue())
+            
+            # Mitglieder zu Embed hinzufügen
+            for member_data in sorted_members:
+                member = await self.bot.fetch_user(int(member_data["member_id"]))
+                # Rang anhand der ID holen
+                rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])
+
+                # Überprüfen, ob der Rang existiert und den Rangnamen als Text einfügen
+                additional_text = member_data.get("additional_text", "")  # Standardmäßig leer, falls nicht gesetzt
+                if rank:
+                    embed.add_field(name=rank.name, value=f"{member.mention} {additional_text}", inline=False)
+                else:
+                    embed.add_field(name="Unbekannter Rang", value=f"{member.mention} {additional_text}", inline=False)
+
+            # Footer hinzufügen
+            embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
+
+            # Überprüfen, ob bereits eine Nachricht existiert, die die Mitgliederliste enthält
+            async for message in channel.history(limit=1):
+                if message.embeds:  # Wenn die Nachricht ein Embed hat, ist es die Mitgliederliste
+                    # Bearbeite die bestehende Nachricht
                     await message.edit(embed=embed)
                     return  # Nach der Bearbeitung beenden
             # Falls keine Nachricht existiert, sende eine neue
