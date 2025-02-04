@@ -40,3 +40,5 @@ async def role_update(self):
 
             embed.set_footer(text=f"Letzte Aktualisierung: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             await channel.send(embed=embed)
+async def setup(bot):
+    await bot.add_cog(RoleManager(bot))
