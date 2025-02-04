@@ -52,10 +52,14 @@ class UnitManager(commands.Cog):
             # Mitglieder zu Embed hinzufügen
             for member_data in sorted_members:
                 member = await self.bot.fetch_user(int(member_data["member_id"]))
-                rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])  # Rang anhand der ID holen
-                
-                # Füge ein Feld für jedes Mitglied hinzu (Rank als markierte Rolle und User)
-                embed.add_field(name=rank.mention, value=member.mention, inline=False)
+                # Rang anhand der ID holen
+                rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])
+
+                # Füge das Mitglied als Rolle und Benutzer (mentionable) hinzu
+                if rank:
+                    embed.add_field(name=rank.mention, value=member.mention, inline=False)
+                else:
+                    embed.add_field(name="Unbekannter Rang", value=member.mention, inline=False)
 
             # Footer hinzufügen
             embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
