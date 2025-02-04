@@ -57,9 +57,9 @@ class UnitManager(commands.Cog):
 
                 # Überprüfen, ob der Rang existiert und den Rangnamen als Text einfügen
                 if rank:
-                    embed.add_field(name=rank.name, value=member.mention, inline=False)
+                    embed.add_field(name=rank.name, value=f"{member.mention} {member_data['additional_text']}", inline=False)
                 else:
-                    embed.add_field(name="Unbekannter Rang", value=member.mention, inline=False)
+                    embed.add_field(name="Unbekannter Rang", value=f"{member.mention} {member_data['additional_text']}", inline=False)
 
             # Footer hinzufügen
             embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
@@ -91,7 +91,7 @@ class UnitManager(commands.Cog):
         await interaction.response.send_message(f"Die Channel-ID für die Einheit {unit_name} wurde auf {channel.mention} gesetzt.", ephemeral=True)
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
-    async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None):
+    async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None, additional_text: str = ""):
         """Fügt ein Mitglied zu einer bestimmten Einheit hinzu und weist ihm einen Rang zu."""
         units = load_units()
 
@@ -112,7 +112,8 @@ class UnitManager(commands.Cog):
             "member_id": str(member.id),
             "rank": rank.id,  # Rolle als ID speichern
             "sort_id": sort_id or len(units["units"][unit_name]["members"]),  # Wenn keine Sortier-ID angegeben, wird das Mitglied ans Ende gesetzt
-            "rank_sort_id": rank_sort_id or len(units["units"][unit_name]["members"])  # Rang-SortID hinzufügen
+            "rank_sort_id": rank_sort_id or len(units["units"][unit_name]["members"]),  # Rang-SortID hinzufügen
+            "additional_text": additional_text  # Zusatztext hinzufügen
         })
         
         # Mitglied die Rolle zuweisen
@@ -122,7 +123,7 @@ class UnitManager(commands.Cog):
         # Aktualisiere die Mitgliederliste im Channel der Einheit
         await self.update_unit_list(unit_name)
         
-        await interaction.response.send_message(f"{member.mention} wurde erfolgreich zur Einheit {unit_name} hinzugefügt und der Rang {rank.name} zugewiesen.", ephemeral=True)
+        await interaction.response.send_message(f"{member.mention} wurde erfolgreich zur Einheit {unit_name} hinzugefügt, der Rang {rank.name} zugewiesen und der Zusatztext '{additional_text}' hinzugefügt.", ephemeral=True)
 
     @app_commands.command(name="removemember", description="Entfernt ein Mitglied aus einer Einheit.")
     async def removemember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member):
@@ -164,7 +165,7 @@ class UnitManager(commands.Cog):
         unit_members = units["units"][unit_name]["members"]
         sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])  # Mitglieder nach Sortier-ID sortieren
         member_mentions = [await self.bot.fetch_user(int(m["member_id"])) for m in sorted_members]
-        member_mentions = [member.mention for member in member_mentions]
+        member_mentions = [f"{member.mention} {m.get('additional_text', '')}" for member, m in zip(member_mentions, sorted_members)]
         
         if member_mentions:
             await interaction.response.send_message(f"Mitglieder der Einheit {unit_name}:\n" + "\n".join(member_mentions), ephemeral=True)
