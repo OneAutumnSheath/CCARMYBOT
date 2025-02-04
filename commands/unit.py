@@ -3,6 +3,9 @@ from discord.ext import commands
 from discord import app_commands
 from permissions_logic import check_permissions  # Berechtigungsprüfung
 from commands.log_module import LogModule
+from unitliste import load_units
+from unitliste import save_units
+from unitliste import UnitManager
 # Channel und Rollen-IDs
 UNIT_CHANNEL = 1173700352403591189  # Kanal-ID für Unit Update Ankündigungen
 MGMT_ID = 1097648080020574260  # Management-ID für die Ankündigungen
@@ -65,7 +68,7 @@ class Unit(commands.Cog):
         except discord.DiscordException as e:
             await interaction.response.send_message(f"Fehler beim Hinzufügen der Rollen: {e}", ephemeral=True)
             return
-
+        
         # Sende die Nachricht in den festgelegten Kanal
         channel = interaction.guild.get_channel(UNIT_CHANNEL)
         if channel:
