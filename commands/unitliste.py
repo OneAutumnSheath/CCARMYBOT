@@ -54,8 +54,8 @@ class UnitManager(commands.Cog):
                 member = await self.bot.fetch_user(int(member_data["member_id"]))
                 rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])  # Rang anhand der ID holen
                 
-                # Füge ein Feld für jedes Mitglied hinzu (Rank und User)
-                embed.add_field(name=rank.name, value=member.mention, inline=False)
+                # Füge ein Feld für jedes Mitglied hinzu (Rank als markierte Rolle und User)
+                embed.add_field(name=rank.mention, value=member.mention, inline=False)
 
             # Footer hinzufügen
             embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
