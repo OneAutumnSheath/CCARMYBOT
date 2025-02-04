@@ -70,7 +70,7 @@ class UnitManager(commands.Cog):
             await channel.send(embed=embed)
 
     @app_commands.command(name="setchannel", description="Setzt die Channel-ID für eine Einheit.")
-    async def setchannel(self, interaction: discord.Interaction, unit_name: discord.Role, channel: discord.TextChannel, rank: discord.Role):
+    async def setchannel(self, interaction: discord.Interaction, unit_name: str, channel: discord.TextChannel, rank: discord.Role):
         """Setzt den Channel und die Rolle für eine Einheit."""
         units = load_units()
 
@@ -88,7 +88,7 @@ class UnitManager(commands.Cog):
         await interaction.response.send_message(f"Die Channel-ID und der Rank für die Einheit {unit_name} wurden auf {channel.mention} und {rank.name} gesetzt.", ephemeral=True)
 
     @app_commands.command(name="addmember", description="Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu.")
-    async def addmember(self, interaction: discord.Interaction, unit_name: discord.Role, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None):
+    async def addmember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member, rank: discord.Role, sort_id: int = None, rank_sort_id: int = None):
         """Fügt ein Mitglied zu einer bestimmten Einheit hinzu und weist ihm einen Rang zu."""
         units = load_units()
 
@@ -122,7 +122,7 @@ class UnitManager(commands.Cog):
         await interaction.response.send_message(f"{member.mention} wurde erfolgreich zur Einheit {unit_name} hinzugefügt und der Rang {rank.name} zugewiesen.", ephemeral=True)
 
     @app_commands.command(name="removemember", description="Entfernt ein Mitglied aus einer Einheit.")
-    async def removemember(self, interaction: discord.Interaction, unit_name: discord.Role, member: discord.Member):
+    async def removemember(self, interaction: discord.Interaction, unit_name: str, member: discord.Member):
         """Entfernt ein Mitglied aus einer bestimmten Einheit."""
         units = load_units()
 
