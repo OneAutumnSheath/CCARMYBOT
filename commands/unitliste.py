@@ -23,47 +23,47 @@ def save_units(units):
     """Speichert die Einheiten und Mitglieder in der YAML-Datei."""
     with open(UNIT_FILE, "w") as f:
         yaml.dump(units, f)
+async def update_unit_list(self, unit_name: str):
+    """Aktualisiert die Mitgliederliste im spezifizierten Channel für die Einheit."""
+    units = load_units()
+
+    # Überprüfen, ob die Einheit existiert
+    if unit_name not in units["units"]:
+        return
+
+    unit = units["units"][unit_name]
+    channel_id = unit["channel_id"]
+    unit_members = unit["members"]
+
+    # Mitglieder nach der Sortier-ID sortieren
+    sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])
+
+    # Channel finden
+    channel = self.bot.get_channel(channel_id)
+    if channel:
+        # Embed-Nachricht erstellen
+        embed = discord.Embed(title=f"Mitglieder der Einheit {unit_name}", color=discord.Color.blue())
+
+        for member_data in sorted_members:
+            member = await self.bot.fetch_user(int(member_data["member_id"]))
+            rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])
+            embed.add_field(name=rank.name if rank else "Unbekannter Rang", value=member.mention, inline=False)
+
+        embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
+
+        # Überprüfen, ob bereits eine Nachricht existiert, die die Mitgliederliste enthält
+        async for message in channel.history(limit=1):
+            if message.embeds:  # Wenn die Nachricht ein Embed hat, ist es die Mitgliederliste
+                # Bearbeite die bestehende Nachricht
+                await message.edit(embed=embed)
+                return  # Nach der Bearbeitung beenden
+        # Falls keine Nachricht existiert, sende eine neue
+        await channel.send(embed=embed)
 
 class UnitManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    async def update_unit_list(self, unit_name: str):
-        """Aktualisiert die Mitgliederliste im spezifizierten Channel für die Einheit."""
-        units = load_units()
-
-        # Überprüfen, ob die Einheit existiert
-        if unit_name not in units["units"]:
-            return
-
-        unit = units["units"][unit_name]
-        channel_id = unit["channel_id"]
-        unit_members = unit["members"]
-
-        # Mitglieder nach der Sortier-ID sortieren
-        sorted_members = sorted(unit_members, key=lambda x: x["sort_id"])
-
-        # Channel finden
-        channel = self.bot.get_channel(channel_id)
-        if channel:
-            # Embed-Nachricht erstellen
-            embed = discord.Embed(title=f"Mitglieder der Einheit {unit_name}", color=discord.Color.blue())
-
-            for member_data in sorted_members:
-                member = await self.bot.fetch_user(int(member_data["member_id"]))
-                rank = discord.utils.get(self.bot.guilds[0].roles, id=member_data["rank"])
-                embed.add_field(name=rank.name if rank else "Unbekannter Rang", value=member.mention, inline=False)
-
-            embed.set_footer(text="U.S. ARMY Management", icon_url="https://oneautumnsheath.de/army.png")
-
-            # Überprüfen, ob bereits eine Nachricht existiert, die die Mitgliederliste enthält
-            async for message in channel.history(limit=1):
-                if message.embeds:  # Wenn die Nachricht ein Embed hat, ist es die Mitgliederliste
-                    # Bearbeite die bestehende Nachricht
-                    await message.edit(embed=embed)
-                    return  # Nach der Bearbeitung beenden
-            # Falls keine Nachricht existiert, sende eine neue
-            await channel.send(embed=embed)
-
+    
     async def add_unit_member(self, unit_name: str, member: discord.Member, rank: discord.Role):
         """Fügt ein Mitglied einer Einheit hinzu und weist ihm einen Rang zu."""
         units = load_units()
