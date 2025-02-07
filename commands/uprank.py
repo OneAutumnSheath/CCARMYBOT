@@ -75,7 +75,7 @@ class Uprank(commands.Cog):
         # Sende die Ankündigung nur im Personal-Kanal
         personal_channel = self.bot.get_channel(PERSONAL_CHANNEL)
         if personal_channel:
-            await channel.send(f"{user.mention}")
+            await personal_channel.send(f"{user.mention}")
             await personal_channel.send(embed=embed)
         else:
             await interaction.followup.send("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
