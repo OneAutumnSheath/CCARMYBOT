@@ -72,6 +72,7 @@ class Unit(commands.Cog):
         # Sende die Nachricht in den festgelegten Kanal
         channel = interaction.guild.get_channel(UNIT_CHANNEL)
         if channel:
+            await channel.send(f"{user.mention}")
             await channel.send(embed=embed)
         else:
             await interaction.response.send_message("Ankündigungskanal nicht gefunden.", ephemeral=True)
@@ -110,6 +111,7 @@ class Unit(commands.Cog):
 
         # Sende die Nachricht in den festgelegten Kanal
         channel = interaction.guild.get_channel(UNIT_CHANNEL)
+        await channel.send(f"{user.mention}")
         await channel.send(embed=embed)
 
         # Rollen entfernen
@@ -181,6 +183,7 @@ class Unit(commands.Cog):
         if not channel:
             await interaction.response.send_message("Der Unit-Kanal wurde nicht gefunden!", ephemeral=True)
             return
+        await channel.send(f"{user.mention}")
         await channel.send(embed=embed)
 
         # Rolle hinzufügen, optionale Rolle hinzufügen und alte Rolle entfernen
@@ -263,6 +266,7 @@ class Unit(commands.Cog):
         # Sende die Nachricht in den festgelegten Kanal (Unit Update Kanal)
         channel = self.bot.get_channel(1173700352403591189)  # ID des Unit Update Kanals
         if channel:
+            await channel.send(f"{user.mention}")
             await channel.send(embed=embed)
         else:
             await interaction.response.send_message("Der Kanal konnte nicht gefunden werden.", ephemeral=True)

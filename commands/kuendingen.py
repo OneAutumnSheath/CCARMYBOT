@@ -48,7 +48,7 @@ class Kuendingen(commands.Cog):
         if not channel:
             await interaction.response.send_message("Der persönliche Kanal wurde nicht gefunden!", ephemeral=True)
             return
-
+        await channel.send(f"{user.mention}")
         await channel.send(embed=embed)
 
         # Benutzer kicken

@@ -80,6 +80,7 @@ class EinstellenCog(commands.Cog):
         if not channel:
             await interaction.followup.send("Der Personal-Kanal wurde nicht gefunden!", ephemeral=True)
             return
+        await channel.send(f"{user.mention}")
         await channel.send(embed=embed)
 
         # Rollen hinzufügen
