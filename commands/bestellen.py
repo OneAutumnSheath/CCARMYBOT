@@ -45,8 +45,17 @@ class BestellenCog(commands.Cog):
             """)
             conn.commit()
 
-    def add_bestellung(self, bestellnummer, fraktion_id, **items):
-        """Fügt eine neue Bestellung in die Datenbank ein."""
+    def generate_bestellnummer(self):
+        """Generiert die nächste verfügbare Bestellnummer."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT MAX(bestellnummer) FROM bestellungen")
+            last_number = cursor.fetchone()[0]
+            return (last_number + 1) if last_number else 1  # Falls keine Bestellungen existieren, starte mit 1
+
+    def add_bestellung(self, fraktion_id, preis, **items):
+        """Fügt eine neue Bestellung in die Datenbank ein und gibt die Bestellnummer zurück."""
+        bestellnummer = self.generate_bestellnummer()
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -56,11 +65,12 @@ class BestellenCog(commands.Cog):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (bestellnummer, fraktion_id, *items.values()))
             conn.commit()
+        return bestellnummer
 
     @app_commands.command(name="bestellen", description="Erstellt eine neue Waffenbestellung.")
     async def bestellen(
         self, interaction: discord.Interaction, 
-        fraktion: discord.Role, bestellnummer: int, preis: int,
+        fraktion: discord.Role, preis: int,
         gefechtspistole: int = 0, kampf_pdw: int = 0, smg: int = 0, schlagstock: int = 0,
         tazer: int = 0, taschenlampe: int = 0, fallschirm: int = 0, schutzweste: int = 0,
         magazin: int = 0, erweitertes_magazin: int = 0, waffengriff: int = 0,
@@ -77,67 +87,56 @@ class BestellenCog(commands.Cog):
             await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
             return
 
-        # Bestellung in die Datenbank einfügen
-        self.add_bestellung(
-            bestellnummer, fraktion.id,
-            gefechtspistole=gefechtspistole, kampf_pdw=kampf_pdw, smg=smg, schlagstock=schlagstock,
-            tazer=tazer, taschenlampe=taschenlampe, fallschirm=fallschirm, schutzweste=schutzweste,
-            magazin=magazin, erweitertes_magazin=erweitertes_magazin, waffengriff=waffengriff,
-            schalldaempfer=schalldaempfer, taschenlampe_aufsatz=taschenlampe_aufsatz, zielfernrohr=zielfernrohr,
-            kampf_smg=kampf_smg, schwerer_revolver=schwerer_revolver, preis=preis
-        )
+        # Artikel speichern
+        bestellte_artikel = {
+            "Gefechtspistole": gefechtspistole,
+            "Kampf-PDW": kampf_pdw,
+            "SMG": smg,
+            "Schlagstock": schlagstock,
+            "Tazer": tazer,
+            "Taschenlampe": taschenlampe,
+            "Fallschirm": fallschirm,
+            "Schutzweste": schutzweste,
+            "Magazin": magazin,
+            "Erweitertes Magazin": erweitertes_magazin,
+            "Waffengriff": waffengriff,
+            "Schalldämpfer": schalldaempfer,
+            "Taschenlampen-Aufsatz": taschenlampe_aufsatz,
+            "Zielfernrohr": zielfernrohr,
+            "Kampf-SMG": kampf_smg,
+            "Schwerer Revolver": schwerer_revolver
+        }
 
+        # Filtere nur bestellte Artikel (Menge > 0)
+        bestellte_items = [f"🔹 **{name}:** `{menge}`" for name, menge in bestellte_artikel.items() if menge > 0]
+
+        # Falls keine Artikel bestellt wurden
+        if not bestellte_items:
+            await interaction.response.send_message("⚠️ Du musst mindestens einen Artikel bestellen!", ephemeral=True)
+            return
+
+        # Bestellung in die Datenbank einfügen
+        bestellnummer = self.add_bestellung(fraktion.id, preis, **bestellte_artikel)
+
+        # Embed für die Bestätigung
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
             description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Preis:** `{preis}€`\n📌 **Status:** Offen",
             color=discord.Color.green()
         )
-        await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="ausgeliefert", description="Markiert eine Bestellung als ausgeliefert.")
-    async def ausgeliefert(self, interaction: discord.Interaction, bestellnummer: int):
-        # **GUILD-Check: Nur auf Guild 1097625621875675188 erlaubt**
-        if interaction.guild_id != LAGER_GUILD_ID:
-            await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
-            return
-
-        # **Berechtigungsprüfung**
-        if not await self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
-            return
-
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE bestellungen SET status = 'Ausgeliefert' WHERE bestellnummer = ?", (bestellnummer,))
-            conn.commit()
-
-        await interaction.response.send_message(f"✅ Bestellung `{bestellnummer}` wurde als **ausgeliefert** markiert!", ephemeral=True)
-
-    @app_commands.command(name="wochenbericht", description="Zeigt alle offenen Bestellungen.")
-    async def wochenbericht(self, interaction: discord.Interaction):
-        # **GUILD-Check: Nur auf Guild 1097625621875675188 erlaubt**
-        if interaction.guild_id != LAGER_GUILD_ID:
-            await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
-            return
-
-        # **Berechtigungsprüfung**
-        if not await self.is_allowed(interaction):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
-            return
-
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM bestellungen WHERE status = 'Offen'")
-            bestellungen = cursor.fetchall()
-
-        if not bestellungen:
-            await interaction.response.send_message("📭 Keine offenen Bestellungen!", ephemeral=True)
-            return
-
-        bericht = "\n".join([f"📦 **Bestellnummer:** {b[1]}, 💰 **Preis:** {b[-2]}€, 📌 **Status:** {b[-1]}" for b in bestellungen])
-        embed = discord.Embed(title="📋 Offene Bestellungen", description=bericht, color=discord.Color.orange())
+        # Artikel zur Embed hinzufügen
+        embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
 
         await interaction.response.send_message(embed=embed)
+
+
+    async def is_allowed(self, interaction):
+        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
+        if not check_permissions("bestellen", interaction.user.id, [role.id for role in interaction.user.roles]):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
+            return False
+        return True
 
 async def setup(bot):
     await bot.add_cog(BestellenCog(bot))
