@@ -4,6 +4,10 @@ from discord import app_commands
 import sqlite3
 from permissions_logic import check_permissions  # Import der Berechtigungsprüfung
 
+# GUILD-IDs für Befehle
+BESTELLEN_GUILD_ID = 1097626402540499044
+LAGER_GUILD_ID = 1097625621875675188
+
 class BestellenCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -20,7 +24,7 @@ class BestellenCog(commands.Cog):
                     bestellnummer INTEGER UNIQUE,
                     fraktion_id INTEGER,
                     gefechtspistole INTEGER DEFAULT 0,
-                    kampfPDW INTEGER DEFAULT 0,
+                    kampf_pdw INTEGER DEFAULT 0,
                     smg INTEGER DEFAULT 0,
                     schlagstock INTEGER DEFAULT 0,
                     tazer INTEGER DEFAULT 0,
@@ -33,7 +37,7 @@ class BestellenCog(commands.Cog):
                     schalldaempfer INTEGER DEFAULT 0,
                     taschenlampe_aufsatz INTEGER DEFAULT 0,
                     zielfernrohr INTEGER DEFAULT 0,
-                    kampfSMG INTEGER DEFAULT 0,
+                    kampf_smg INTEGER DEFAULT 0,
                     schwerer_revolver INTEGER DEFAULT 0,
                     preis INTEGER DEFAULT 0,
                     status TEXT DEFAULT 'Offen'
@@ -46,9 +50,9 @@ class BestellenCog(commands.Cog):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO bestellungen (bestellnummer, fraktion_id, gefechtspistole, kampfPDW, smg, schlagstock, tazer, 
+                INSERT INTO bestellungen (bestellnummer, fraktion_id, gefechtspistole, kampf_pdw, smg, schlagstock, tazer, 
                 taschenlampe, fallschirm, schutzweste, magazin, erweitertes_magazin, waffengriff, schalldaempfer, 
-                taschenlampe_aufsatz, zielfernrohr, kampfSMG, schwerer_revolver, preis)
+                taschenlampe_aufsatz, zielfernrohr, kampf_smg, schwerer_revolver, preis)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (bestellnummer, fraktion_id, *items.values()))
             conn.commit()
@@ -63,77 +67,77 @@ class BestellenCog(commands.Cog):
         schalldaempfer: int = 0, taschenlampe_aufsatz: int = 0, zielfernrohr: int = 0,
         kampf_smg: int = 0, schwerer_revolver: int = 0
     ):
+        # **GUILD-Check: Bestellen nur auf Guild 1097626402540499044 erlaubt**
+        if interaction.guild_id != BESTELLEN_GUILD_ID:
+            await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
+            return
+
         # **Berechtigungsprüfung**
         if not await self.is_allowed(interaction):
             await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
             return
 
-        # Artikel mit Berechtigungsprüfung definieren
-        artikel_mit_rechten = {
-            "gefechtspistole": gefechtspistole,
-            "kampf_pdw": kampf_pdw,
-            "smg": smg,
-            "schlagstock": schlagstock,
-            "tazer": tazer,
-            "taschenlampe": taschenlampe,
-            "fallschirm": fallschirm,
-            "schutzweste": schutzweste,
-            "magazin": magazin,
-            "erweitertes_magazin": erweitertes_magazin,
-            "waffengriff": waffengriff,
-            "schalldaempfer": schalldaempfer,
-            "taschenlampe_aufsatz": taschenlampe_aufsatz,
-            "zielfernrohr": zielfernrohr,
-            "kampf_smg": kampf_smg,
-            "schwerer_revolver": schwerer_revolver
-        }
-
-        # Liste gesperrter Artikel für den User
-        gesperrte_artikel = []
-        
-        for artikel, menge in artikel_mit_rechten.items():
-            if menge > 0:  # Nur prüfen, wenn das Item bestellt wurde
-                if not check_permissions(f"bestellen.{artikel}", interaction.user.id, [role.id for role in interaction.user.roles]):
-                    gesperrte_artikel.append(artikel)
-
-        # Falls gesperrte Artikel enthalten sind → Fehler ausgeben
-        if gesperrte_artikel:
-            fehlermeldung = "\n".join([f"🚫 **{artikel.replace('_', ' ').title()}** ist für dich nicht verfügbar!" for artikel in gesperrte_artikel])
-            await interaction.response.send_message(f"❌ Du darfst folgende Artikel nicht bestellen:\n{fehlermeldung}", ephemeral=True)
-            return
-
         # Bestellung in die Datenbank einfügen
-        self.add_bestellung(bestellnummer, fraktion.id, **artikel_mit_rechten)
-
-        # Erstelle das Embed für die Bestätigung
-        embed = discord.Embed(
-            title="📦 Bestellung aufgegeben",
-            description=(
-                f"**Fraktion:** {fraktion.mention}\n"
-                f"**Bestellnummer:** `{bestellnummer}`\n"
-                f"💰 **Preis:** `{preis}€`\n"
-                f"📌 **Status:** Offen"
-            ),
-            color=discord.Color.green()
+        self.add_bestellung(
+            bestellnummer, fraktion.id,
+            gefechtspistole=gefechtspistole, kampf_pdw=kampf_pdw, smg=smg, schlagstock=schlagstock,
+            tazer=tazer, taschenlampe=taschenlampe, fallschirm=fallschirm, schutzweste=schutzweste,
+            magazin=magazin, erweitertes_magazin=erweitertes_magazin, waffengriff=waffengriff,
+            schalldaempfer=schalldaempfer, taschenlampe_aufsatz=taschenlampe_aufsatz, zielfernrohr=zielfernrohr,
+            kampf_smg=kampf_smg, schwerer_revolver=schwerer_revolver, preis=preis
         )
 
-        # Liste der bestellten Gegenstände hinzufügen
-        bestellte_items = [f"🔹 **{name.replace('_', ' ').title()}:** `{menge}`" for name, menge in artikel_mit_rechten.items() if menge > 0]
-
-        if bestellte_items:
-            embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
-        else:
-            embed.add_field(name="⚠️ Hinweis", value="Keine Gegenstände wurden angegeben.", inline=False)
-
+        embed = discord.Embed(
+            title="📦 Bestellung aufgegeben",
+            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Preis:** `{preis}€`\n📌 **Status:** Offen",
+            color=discord.Color.green()
+        )
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="ausgeliefert", description="Markiert eine Bestellung als ausgeliefert.")
+    async def ausgeliefert(self, interaction: discord.Interaction, bestellnummer: int):
+        # **GUILD-Check: Nur auf Guild 1097625621875675188 erlaubt**
+        if interaction.guild_id != LAGER_GUILD_ID:
+            await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
+            return
 
-    async def is_allowed(self, interaction):
-        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
-        if not check_permissions("bestellen", interaction.user.id, [role.id for role in interaction.user.roles]):
+        # **Berechtigungsprüfung**
+        if not await self.is_allowed(interaction):
             await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
-            return False
-        return True
+            return
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE bestellungen SET status = 'Ausgeliefert' WHERE bestellnummer = ?", (bestellnummer,))
+            conn.commit()
+
+        await interaction.response.send_message(f"✅ Bestellung `{bestellnummer}` wurde als **ausgeliefert** markiert!", ephemeral=True)
+
+    @app_commands.command(name="wochenbericht", description="Zeigt alle offenen Bestellungen.")
+    async def wochenbericht(self, interaction: discord.Interaction):
+        # **GUILD-Check: Nur auf Guild 1097625621875675188 erlaubt**
+        if interaction.guild_id != LAGER_GUILD_ID:
+            await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
+            return
+
+        # **Berechtigungsprüfung**
+        if not await self.is_allowed(interaction):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
+            return
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM bestellungen WHERE status = 'Offen'")
+            bestellungen = cursor.fetchall()
+
+        if not bestellungen:
+            await interaction.response.send_message("📭 Keine offenen Bestellungen!", ephemeral=True)
+            return
+
+        bericht = "\n".join([f"📦 **Bestellnummer:** {b[1]}, 💰 **Preis:** {b[-2]}€, 📌 **Status:** {b[-1]}" for b in bestellungen])
+        embed = discord.Embed(title="📋 Offene Bestellungen", description=bericht, color=discord.Color.orange())
+
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(BestellenCog(bot))
