@@ -76,21 +76,26 @@ class KassenCog(commands.Cog):
         self, interaction: discord.Interaction,
         geld: int = 0, schwarzgeld: int = 0
     ):
+        # **Berechtigungsprüfung**
         if not await self.is_allowed(interaction):
             await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
             return
+        
         # Falls weder Geld noch Schwarzgeld angegeben wurde
         if geld == 0 and schwarzgeld == 0:
             await interaction.response.send_message("⚠️ Du musst mindestens einen Betrag angeben!", ephemeral=True)
             return
         
+        # Kassenstand vor der Einzahlung abrufen (optional für Vergleich)
+        old_geld, old_schwarzgeld = self.get_kassenstand()
+
         # Datenbank aktualisieren
         self.update_kassenstand(geld, schwarzgeld)
 
         # Neuen Kassenstand abrufen
         new_geld, new_schwarzgeld = self.get_kassenstand()
 
-        # Dynamische Embed-Erstellung für den User (nur für den Ausführenden sichtbar)
+        # Dynamische Embed-Erstellung für den User
         if geld > 0 and schwarzgeld > 0:
             embed_user = discord.Embed(
                 title="💵 Einzahlung",
@@ -120,12 +125,12 @@ class KassenCog(commands.Cog):
                 color=discord.Color.green()
             )
 
-        # Kassenstand-Embed für den User (nur für den Ausführenden sichtbar)
+        # Kassenstand-Embed für den User
         embed_kassenstand = discord.Embed(
             title="📊 Neuer Kassenstand",
             description=(
-                f"💰 **Geld:** {new_geld}€\n"
-                f"🖤 **Schwarzgeld:** {new_schwarzgeld}€"
+                f"💰 **Geld:** {new_geld}€ (vorher: {old_geld}€)\n"
+                f"🖤 **Schwarzgeld:** {new_schwarzgeld}€ (vorher: {old_schwarzgeld}€)"
             ),
             color=discord.Color.blue()
         )
@@ -143,12 +148,12 @@ class KassenCog(commands.Cog):
             color=discord.Color.orange()
         )
 
-        # Antwort an den Nutzer (ephemeral, nur für ihn sichtbar)
-        await interaction.response.send_message(embed=embed_user, ephemeral=True)
-        await interaction.followup.send(embed=embed_kassenstand, ephemeral=True)
+        # Antwort an den Nutzer (ephemeral, beide Embeds in EINER Nachricht)
+        await interaction.response.send_message(embeds=[embed_user, embed_kassenstand], ephemeral=True)
 
         # Transaktion im Log-Channel posten
         await self.log_transaction(interaction, embed_log)
+
 
 
     @app_commands.command(name="auszahlen", description="Zahlt Geld aus der Kasse aus.")
