@@ -57,11 +57,11 @@ class BestellenCog(commands.Cog):
     async def bestellen(
         self, interaction: discord.Interaction, 
         fraktion: discord.Role, bestellnummer: int, preis: int,
-        gefechtspistole: int = 0, kampfPDW: int = 0, smg: int = 0, schlagstock: int = 0,
+        gefechtspistole: int = 0, kampf_pdw: int = 0, smg: int = 0, schlagstock: int = 0,
         tazer: int = 0, taschenlampe: int = 0, fallschirm: int = 0, schutzweste: int = 0,
         magazin: int = 0, erweitertes_magazin: int = 0, waffengriff: int = 0,
         schalldaempfer: int = 0, taschenlampe_aufsatz: int = 0, zielfernrohr: int = 0,
-        kampfSMG: int = 0, schwerer_revolver: int = 0
+        kampf_smg: int = 0, schwerer_revolver: int = 0
     ):
         # **Berechtigungsprüfung**
         if not await self.is_allowed(interaction):
@@ -71,7 +71,7 @@ class BestellenCog(commands.Cog):
         # Artikel mit Berechtigungsprüfung definieren
         artikel_mit_rechten = {
             "gefechtspistole": gefechtspistole,
-            "kampfPDW": kampfPDW,
+            "kampf_pdw": kampf_pdw,
             "smg": smg,
             "schlagstock": schlagstock,
             "tazer": tazer,
@@ -84,7 +84,7 @@ class BestellenCog(commands.Cog):
             "schalldaempfer": schalldaempfer,
             "taschenlampe_aufsatz": taschenlampe_aufsatz,
             "zielfernrohr": zielfernrohr,
-            "kampfSMG": kampfSMG,
+            "kampf_smg": kampf_smg,
             "schwerer_revolver": schwerer_revolver
         }
 
@@ -126,6 +126,7 @@ class BestellenCog(commands.Cog):
             embed.add_field(name="⚠️ Hinweis", value="Keine Gegenstände wurden angegeben.", inline=False)
 
         await interaction.response.send_message(embed=embed)
+
 
     async def is_allowed(self, interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
