@@ -252,6 +252,30 @@ class KassenCog(commands.Cog):
         # Transaktion im Log-Channel posten
         await self.log_transaction(interaction, embed_log)
 
+    @app_commands.command(name="send-kassenstand", description="Sendet den aktuellen Kassenstand in den Kassen-Channel.")
+    async def send_kassenstand(self, interaction: discord.Interaction):
+        # Aktuellen Kassenstand abrufen
+        geld, schwarzgeld = self.get_kassenstand()
+
+        # Embed für den Kassenstand
+        embed_kassenstand = discord.Embed(
+            title="📊 Aktueller Kassenstand",
+            description=(
+                f"💰 **Geld:** {geld}€\n"
+                f"🖤 **Schwarzgeld:** {schwarzgeld}€"
+            ),
+            color=discord.Color.blue()
+        )
+
+        # Kassen-Channel abrufen
+        channel = self.bot.get_channel(1174103974513758329)
+
+        # Falls der Channel existiert, Nachricht senden
+        if channel:
+            await channel.send(embed=embed_kassenstand)
+            await interaction.response.send_message("✅ Kassenstand wurde erfolgreich gesendet!", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ Kassen-Channel nicht gefunden!", ephemeral=True)
 
 # Setup-Funktion für das Cog
 async def setup(bot):
