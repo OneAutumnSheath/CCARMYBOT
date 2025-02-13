@@ -276,7 +276,7 @@ class KassenCog(commands.Cog):
         )
 
         # Kassen-Channel abrufen
-        channel = self.bot.get_channel(1174103974513758329)
+        channel = self.bot.get_channel(1339424277446787143)
 
         # Falls der Channel existiert, Nachricht senden
         if channel:
