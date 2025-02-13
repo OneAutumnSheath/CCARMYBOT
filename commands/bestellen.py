@@ -68,6 +68,14 @@ class BestellenCog(commands.Cog):
             )
 
             conn.commit()
+    
+    def generate_bestellnummer(self):
+        """Generiert die nächste verfügbare Bestellnummer."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT MAX(bestellnummer) FROM bestellungen")
+            last_number = cursor.fetchone()[0]
+            return (last_number + 1) if last_number else 1  # Falls keine Bestellungen existieren, starte mit 1
 
     async def is_allowed(self, interaction: discord.Interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
@@ -95,61 +103,15 @@ class BestellenCog(commands.Cog):
         if not await self.is_allowed(interaction):
             return
 
-        # Artikel speichern
-        bestellte_artikel = {
-            "gefechtspistole": gefechtspistole,
-            "kampf_pdw": kampf_pdw,
-            "smg": smg,
-            "schlagstock": schlagstock,
-            "tazer": tazer,
-            "taschenlampe": taschenlampe,
-            "fallschirm": fallschirm,
-            "schutzweste": schutzweste,
-            "magazin": magazin,
-            "erweitertes_magazin": erweitertes_magazin,
-            "waffengriff": waffengriff,
-            "schalldaempfer": schalldaempfer,
-            "taschenlampe_aufsatz": taschenlampe_aufsatz,
-            "zielfernrohr": zielfernrohr,
-            "kampf_smg": kampf_smg,
-            "schwerer_revolver": schwerer_revolver
-        }
-
-        # Überprüfen, ob der Nutzer berechtigt ist, bestimmte Artikel zu bestellen
-        gesperrte_artikel = []
-        erlaubte_artikel = {}
-
-        for artikel, menge in bestellte_artikel.items():
-            if menge > 0:  # Nur prüfen, wenn der Artikel bestellt wurde
-                if not check_permissions(f"bestellen.{artikel}", interaction.user.id, [role.id for role in interaction.user.roles]):
-                    gesperrte_artikel.append(artikel)
-                else:
-                    erlaubte_artikel[artikel] = menge
-
-        # Falls gesperrte Artikel enthalten sind → Fehler ausgeben
-        if gesperrte_artikel:
-            fehlermeldung = "\n".join([f"🚫 **{artikel.replace('_', ' ').title()}** ist für dich nicht verfügbar!" for artikel in gesperrte_artikel])
-            await interaction.response.send_message(f"❌ Du darfst folgende Artikel nicht bestellen:\n{fehlermeldung}", ephemeral=True)
-            return
-
         bestellnummer = self.generate_bestellnummer()
-
-        # Berechnung des Gesamtpreises
-        artikel_preise = self.get_artikel_preise()
-        gesamtpreis = sum(artikel_preise[item] * menge for item, menge in erlaubte_artikel.items())
-
-        # Bestellung in die Datenbank einfügen
-        self.add_bestellung(fraktion.id, bestellnummer, gesamtpreis, **erlaubte_artikel)
 
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
-            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Gesamtpreis:** `{gesamtpreis}€`\n📌 **Status:** Offen",
+            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`",
             color=discord.Color.green()
         )
 
-        bestellte_items = [f"🔹 **{name}:** `{menge}`" for name, menge in erlaubte_artikel.items()]
-        embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
-
         await interaction.response.send_message(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(BestellenCog(bot))
