@@ -77,6 +77,13 @@ class BestellenCog(commands.Cog):
             last_number = cursor.fetchone()[0]
             return (last_number + 1) if last_number else 1  # Falls keine Bestellungen existieren, starte mit 1
 
+    def get_artikel_preise(self):
+        """Liest die Artikelpreise aus der Datenbank und gibt sie als Dictionary zurück."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT artikel, preis FROM preise")
+            return dict(cursor.fetchall())
+
     async def is_allowed(self, interaction: discord.Interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         if not check_permissions("bestellen", interaction.user.id, [role.id for role in interaction.user.roles]):
@@ -94,16 +101,36 @@ class BestellenCog(commands.Cog):
         schalldaempfer: int = 0, taschenlampe_aufsatz: int = 0, zielfernrohr: int = 0,
         kampf_smg: int = 0, schwerer_revolver: int = 0
     ):
-        # **GUILD-Check: Bestellen nur auf Guild 1097626402540499044 erlaubt**
         if interaction.guild_id != BESTELLEN_GUILD_ID:
             await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
             return
 
-        # **Berechtigungsprüfung**
         if not await self.is_allowed(interaction):
             return
 
         bestellnummer = self.generate_bestellnummer()
+
+        # Berechnung des Gesamtpreises
+        artikel_preise = self.get_artikel_preise()
+        bestellte_artikel = {
+            "gefechtspistole": gefechtspistole,
+            "kampf_pdw": kampf_pdw,
+            "smg": smg,
+            "schlagstock": schlagstock,
+            "tazer": tazer,
+            "taschenlampe": taschenlampe,
+            "fallschirm": fallschirm,
+            "schutzweste": schutzweste,
+            "magazin": magazin,
+            "erweitertes_magazin": erweitertes_magazin,
+            "waffengriff": waffengriff,
+            "schalldaempfer": schalldaempfer,
+            "taschenlampe_aufsatz": taschenlampe_aufsatz,
+            "zielfernrohr": zielfernrohr,
+            "kampf_smg": kampf_smg,
+            "schwerer_revolver": schwerer_revolver
+        }
+        gesamtpreis = sum(artikel_preise[item] * menge for item, menge in bestellte_artikel.items() if menge > 0)
 
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
