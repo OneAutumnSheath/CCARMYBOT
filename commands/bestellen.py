@@ -23,7 +23,6 @@ class BestellenCog(commands.Cog):
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS bestellungen (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    bestellnummer INTEGER UNIQUE,
                     fraktion_id INTEGER,
                     gefechtspistole INTEGER DEFAULT 0,
                     kampf_pdw INTEGER DEFAULT 0,
@@ -69,21 +68,6 @@ class BestellenCog(commands.Cog):
 
             conn.commit()
     
-    def generate_bestellnummer(self):
-        """Generiert die nächste verfügbare Bestellnummer."""
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT MAX(bestellnummer) FROM bestellungen")
-            last_number = cursor.fetchone()[0]
-            return (last_number + 1) if last_number else 1  # Falls keine Bestellungen existieren, starte mit 1
-
-    def get_artikel_preise(self):
-        """Liest die Artikelpreise aus der Datenbank und gibt sie als Dictionary zurück."""
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT artikel, preis FROM preise")
-            return dict(cursor.fetchall())
-
     async def is_allowed(self, interaction: discord.Interaction):
         """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
         if not check_permissions("bestellen", interaction.user.id, [role.id for role in interaction.user.roles]):
@@ -108,10 +92,6 @@ class BestellenCog(commands.Cog):
         if not await self.is_allowed(interaction):
             return
 
-        bestellnummer = self.generate_bestellnummer()
-
-        # Berechnung des Gesamtpreises
-        artikel_preise = self.get_artikel_preise()
         bestellte_artikel = {
             "gefechtspistole": gefechtspistole,
             "kampf_pdw": kampf_pdw,
@@ -130,13 +110,24 @@ class BestellenCog(commands.Cog):
             "kampf_smg": kampf_smg,
             "schwerer_revolver": schwerer_revolver
         }
+        artikel_preise = self.get_artikel_preise()
         gesamtpreis = sum(artikel_preise[item] * menge for item, menge in bestellte_artikel.items() if menge > 0)
 
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO bestellungen (fraktion_id, preis) VALUES (?, ?)
+            """, (fraktion.id, gesamtpreis))
+            bestellnummer = cursor.lastrowid  # Die ID als Bestellnummer setzen
+            conn.commit()
+
+        bestellte_items = [f"🔹 **{name}:** `{menge}`" for name, menge in bestellte_artikel.items() if menge > 0]
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
             description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Gesamtpreis:** `{gesamtpreis}€`\n📌 **Status:** Offen",
             color=discord.Color.green()
         )
+        embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
 
         await interaction.response.send_message(embed=embed)
 
