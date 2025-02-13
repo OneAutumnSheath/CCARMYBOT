@@ -84,9 +84,12 @@ class KassenCog(commands.Cog):
         # Datenbank aktualisieren
         self.update_kassenstand(geld, schwarzgeld)
 
-        # Dynamische Embed-Erstellung
+        # Neuen Kassenstand abrufen
+        new_geld, new_schwarzgeld = self.get_kassenstand()
+
+        # Dynamische Embed-Erstellung für den User (nur für den Ausführenden sichtbar)
         if geld > 0 and schwarzgeld > 0:
-            embed = discord.Embed(
+            embed_user = discord.Embed(
                 title="💵 Einzahlung",
                 description=(
                     f"👤 **Von:** {interaction.user.mention}\n"
@@ -96,7 +99,7 @@ class KassenCog(commands.Cog):
                 color=discord.Color.green()
             )
         elif geld > 0:
-            embed = discord.Embed(
+            embed_user = discord.Embed(
                 title="💵 Einzahlung",
                 description=(
                     f"👤 **Von:** {interaction.user.mention}\n"
@@ -105,7 +108,7 @@ class KassenCog(commands.Cog):
                 color=discord.Color.green()
             )
         elif schwarzgeld > 0:
-            embed = discord.Embed(
+            embed_user = discord.Embed(
                 title="💵 Einzahlung",
                 description=(
                     f"👤 **Von:** {interaction.user.mention}\n"
@@ -114,11 +117,36 @@ class KassenCog(commands.Cog):
                 color=discord.Color.green()
             )
 
-        # Antwort an den Nutzer senden
-        await interaction.response.send_message(embed=embed)
+        # Kassenstand-Embed für den User (nur für den Ausführenden sichtbar)
+        embed_kassenstand = discord.Embed(
+            title="📊 Neuer Kassenstand",
+            description=(
+                f"💰 **Geld:** {new_geld}€\n"
+                f"🖤 **Schwarzgeld:** {new_schwarzgeld}€"
+            ),
+            color=discord.Color.blue()
+        )
+
+        # Log-Embed für den Kassen-Channel
+        embed_log = discord.Embed(
+            title="📜 Kassen-Log: Einzahlung",
+            description=(
+                f"👤 **Von:** {interaction.user.mention}\n"
+                f"{'💰 **Geld:** +' + str(geld) + '€' if geld > 0 else ''}"
+                f"{'🖤 **Schwarzgeld:** +' + str(schwarzgeld) + '€' if schwarzgeld > 0 else ''}\n"
+                f"📊 **Neuer Kassenstand:**\n"
+                f"💰 {new_geld}€ | 🖤 {new_schwarzgeld}€"
+            ),
+            color=discord.Color.orange()
+        )
+
+        # Antwort an den Nutzer (ephemeral, nur für ihn sichtbar)
+        await interaction.response.send_message(embed=embed_user, ephemeral=True)
+        await interaction.followup.send(embed=embed_kassenstand, ephemeral=True)
 
         # Transaktion im Log-Channel posten
-        await self.log_transaction(interaction, embed)
+        await self.log_transaction(interaction, embed_log)
+
 
     @app_commands.command(name="auszahlen", description="Zahlt Geld aus der Kasse aus.")
     @app_commands.describe(
