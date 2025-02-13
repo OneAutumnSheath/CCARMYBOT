@@ -1,0 +1,11 @@
+bin/
+include/
+lib/
+lib64/
+.env
+pyvenv.cfg
+lager.db
+lib64
+commands/__pycache__/
+start.sh
+config
