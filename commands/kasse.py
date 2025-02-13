@@ -4,7 +4,7 @@ from discord import app_commands
 import sqlite3
 from permissions_logic import check_permissions  # Import der Berechtigungsprüfung
 
-KASSEN_CHANNEL_ID = 1174103974513758329  # ID des Channels für Transaktions-Logs
+KASSEN_CHANNEL_ID = 1339424277446787143  # ID des Channels für Transaktions-Logs
 
 class KassenCog(commands.Cog):
     def __init__(self, bot):
