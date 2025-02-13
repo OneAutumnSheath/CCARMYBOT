@@ -15,9 +15,11 @@ class BestellenCog(commands.Cog):
         self.init_database()
 
     def init_database(self):
-        """Erstellt die Datenbank für Bestellungen, falls sie nicht existiert."""
+        """Erstellt die Datenbank für Bestellungen und Preise, falls sie nicht existiert."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
+            
+            # Tabelle für Bestellungen
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS bestellungen (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,6 +45,28 @@ class BestellenCog(commands.Cog):
                     status TEXT DEFAULT 'Offen'
                 )
             """)
+
+            # Tabelle für Artikelpreise
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS preise (
+                    artikel TEXT PRIMARY KEY,
+                    preis INTEGER DEFAULT 1
+                )
+            """)
+
+            # Standardpreise setzen, falls noch keine Einträge vorhanden sind
+            default_preise = [
+                ("gefechtspistole", 1), ("kampf_pdw", 1), ("smg", 1), ("schlagstock", 1), ("tazer", 1),
+                ("taschenlampe", 1), ("fallschirm", 1), ("schutzweste", 1), ("magazin", 1), ("erweitertes_magazin", 1),
+                ("waffengriff", 1), ("schalldaempfer", 1), ("taschenlampe_aufsatz", 1), ("zielfernrohr", 1),
+                ("kampf_smg", 1), ("schwerer_revolver", 1)
+            ]
+
+            cursor.executemany(
+                "INSERT OR IGNORE INTO preise (artikel, preis) VALUES (?, ?)",
+                default_preise
+            )
+
             conn.commit()
 
     def generate_bestellnummer(self):
@@ -53,9 +77,21 @@ class BestellenCog(commands.Cog):
             last_number = cursor.fetchone()[0]
             return (last_number + 1) if last_number else 1  # Falls keine Bestellungen existieren, starte mit 1
 
-    def add_bestellung(self, fraktion_id, preis, **items):
-        """Fügt eine neue Bestellung in die Datenbank ein und gibt die Bestellnummer zurück."""
+    def get_artikel_preise(self):
+        """Liest die Artikelpreise aus der Datenbank und gibt sie als Dictionary zurück."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT artikel, preis FROM preise")
+            return dict(cursor.fetchall())
+
+    def add_bestellung(self, fraktion_id, bestellte_artikel):
+        """Fügt eine neue Bestellung in die Datenbank ein und berechnet den Preis."""
         bestellnummer = self.generate_bestellnummer()
+        artikel_preise = self.get_artikel_preise()
+
+        # Berechnung des Gesamtpreises
+        gesamtpreis = sum(artikel_preise[item] * menge for item, menge in bestellte_artikel.items() if menge > 0)
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -63,14 +99,15 @@ class BestellenCog(commands.Cog):
                 taschenlampe, fallschirm, schutzweste, magazin, erweitertes_magazin, waffengriff, schalldaempfer, 
                 taschenlampe_aufsatz, zielfernrohr, kampf_smg, schwerer_revolver, preis)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (bestellnummer, fraktion_id, *items.values()))
+            """, (bestellnummer, fraktion_id, *bestellte_artikel.values(), gesamtpreis))
             conn.commit()
-        return bestellnummer
+
+        return bestellnummer, gesamtpreis
 
     @app_commands.command(name="bestellen", description="Erstellt eine neue Waffenbestellung.")
     async def bestellen(
         self, interaction: discord.Interaction, 
-        fraktion: discord.Role, preis: int,
+        fraktion: discord.Role,
         gefechtspistole: int = 0, kampf_pdw: int = 0, smg: int = 0, schlagstock: int = 0,
         tazer: int = 0, taschenlampe: int = 0, fallschirm: int = 0, schutzweste: int = 0,
         magazin: int = 0, erweitertes_magazin: int = 0, waffengriff: int = 0,
@@ -89,54 +126,36 @@ class BestellenCog(commands.Cog):
 
         # Artikel speichern
         bestellte_artikel = {
-            "Gefechtspistole": gefechtspistole,
-            "Kampf-PDW": kampf_pdw,
-            "SMG": smg,
-            "Schlagstock": schlagstock,
-            "Tazer": tazer,
-            "Taschenlampe": taschenlampe,
-            "Fallschirm": fallschirm,
-            "Schutzweste": schutzweste,
-            "Magazin": magazin,
-            "Erweitertes Magazin": erweitertes_magazin,
-            "Waffengriff": waffengriff,
-            "Schalldämpfer": schalldaempfer,
-            "Taschenlampen-Aufsatz": taschenlampe_aufsatz,
-            "Zielfernrohr": zielfernrohr,
-            "Kampf-SMG": kampf_smg,
-            "Schwerer Revolver": schwerer_revolver
+            "gefechtspistole": gefechtspistole,
+            "kampf_pdw": kampf_pdw,
+            "smg": smg,
+            "schlagstock": schlagstock,
+            "tazer": tazer,
+            "taschenlampe": taschenlampe,
+            "fallschirm": fallschirm,
+            "schutzweste": schutzweste,
+            "magazin": magazin,
+            "erweitertes_magazin": erweitertes_magazin,
+            "waffengriff": waffengriff,
+            "schalldaempfer": schalldaempfer,
+            "taschenlampe_aufsatz": taschenlampe_aufsatz,
+            "zielfernrohr": zielfernrohr,
+            "kampf_smg": kampf_smg,
+            "schwerer_revolver": schwerer_revolver
         }
 
-        # Filtere nur bestellte Artikel (Menge > 0)
-        bestellte_items = [f"🔹 **{name}:** `{menge}`" for name, menge in bestellte_artikel.items() if menge > 0]
+        bestellnummer, gesamtpreis = self.add_bestellung(fraktion.id, bestellte_artikel)
 
-        # Falls keine Artikel bestellt wurden
-        if not bestellte_items:
-            await interaction.response.send_message("⚠️ Du musst mindestens einen Artikel bestellen!", ephemeral=True)
-            return
-
-        # Bestellung in die Datenbank einfügen
-        bestellnummer = self.add_bestellung(fraktion.id, preis, **bestellte_artikel)
-
-        # Embed für die Bestätigung
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
-            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Preis:** `{preis}€`\n📌 **Status:** Offen",
+            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Gesamtpreis:** `{gesamtpreis}€`\n📌 **Status:** Offen",
             color=discord.Color.green()
         )
 
-        # Artikel zur Embed hinzufügen
+        bestellte_items = [f"🔹 **{name}:** `{menge}`" for name, menge in bestellte_artikel.items() if menge > 0]
         embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
 
         await interaction.response.send_message(embed=embed)
-
-
-    async def is_allowed(self, interaction):
-        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
-        if not check_permissions("bestellen", interaction.user.id, [role.id for role in interaction.user.roles]):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
-            return False
-        return True
 
 async def setup(bot):
     await bot.add_cog(BestellenCog(bot))
