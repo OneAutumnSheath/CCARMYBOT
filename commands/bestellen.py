@@ -107,7 +107,7 @@ class BestellenCog(commands.Cog):
 
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
-            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`",
+            description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Gesamtpreis:** `{gesamtpreis}€`\n📌 **Status:** Offen",
             color=discord.Color.green()
         )
 
