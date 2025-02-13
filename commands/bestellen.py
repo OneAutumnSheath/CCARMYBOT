@@ -151,3 +151,5 @@ class BestellenCog(commands.Cog):
         embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
 
         await interaction.response.send_message(embed=embed)
+async def setup(bot):
+    await bot.add_cog(BestellenCog(bot))
