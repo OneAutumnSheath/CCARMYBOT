@@ -76,6 +76,9 @@ class KassenCog(commands.Cog):
         self, interaction: discord.Interaction,
         geld: int = 0, schwarzgeld: int = 0
     ):
+        if not await self.is_allowed(interaction):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
+            return
         # Falls weder Geld noch Schwarzgeld angegeben wurde
         if geld == 0 and schwarzgeld == 0:
             await interaction.response.send_message("⚠️ Du musst mindestens einen Betrag angeben!", ephemeral=True)
@@ -254,6 +257,11 @@ class KassenCog(commands.Cog):
 
     @app_commands.command(name="send-kassenstand", description="Sendet den aktuellen Kassenstand in den Kassen-Channel.")
     async def send_kassenstand(self, interaction: discord.Interaction):
+        # **Berechtigungsprüfung mit `check_permissions`**
+        if not await self.is_allowed(interaction):
+            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
+            return
+
         # Aktuellen Kassenstand abrufen
         geld, schwarzgeld = self.get_kassenstand()
 
@@ -276,6 +284,7 @@ class KassenCog(commands.Cog):
             await interaction.response.send_message("✅ Kassenstand wurde erfolgreich gesendet!", ephemeral=True)
         else:
             await interaction.response.send_message("❌ Kassen-Channel nicht gefunden!", ephemeral=True)
+
 
 # Setup-Funktion für das Cog
 async def setup(bot):
