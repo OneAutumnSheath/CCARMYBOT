@@ -1,135 +1,136 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import sqlite3
-from permissions_logic import check_permissions  # Import der Berechtigungsprüfung
+import mysql.connector
 
-# GUILD-IDs für Befehle
-BESTELLEN_GUILD_ID = 1097626402540499044
-LAGER_GUILD_ID = 1097625621875675188
-
-class BestellenCog(commands.Cog):
+class BestellenNeu(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.db_path = "lager.db"
-        self.init_database()
+        self.db_config = {
+            "host": "localhost",
+            "user": "weaplog_dev",
+            "password": "weaplog_dev",
+            "database": "weaplog_dev"
+        }
+        self.init_databases()
 
-    def init_database(self):
-        """Erstellt die Datenbank für Bestellungen und Preise, falls sie nicht existiert."""
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            
-            # Tabelle für Bestellungen
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS bestellungen (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    fraktion_id INTEGER,
-                    gefechtspistole INTEGER DEFAULT 0,
-                    kampf_pdw INTEGER DEFAULT 0,
-                    smg INTEGER DEFAULT 0,
-                    schlagstock INTEGER DEFAULT 0,
-                    tazer INTEGER DEFAULT 0,
-                    taschenlampe INTEGER DEFAULT 0,
-                    fallschirm INTEGER DEFAULT 0,
-                    schutzweste INTEGER DEFAULT 0,
-                    magazin INTEGER DEFAULT 0,
-                    erweitertes_magazin INTEGER DEFAULT 0,
-                    waffengriff INTEGER DEFAULT 0,
-                    schalldaempfer INTEGER DEFAULT 0,
-                    taschenlampe_aufsatz INTEGER DEFAULT 0,
-                    zielfernrohr INTEGER DEFAULT 0,
-                    kampf_smg INTEGER DEFAULT 0,
-                    schwerer_revolver INTEGER DEFAULT 0,
-                    preis INTEGER DEFAULT 0,
-                    status TEXT DEFAULT 'Offen'
-                )
-            """)
-
-            # Tabelle für Artikelpreise
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS preise (
-                    artikel TEXT PRIMARY KEY,
-                    preis INTEGER DEFAULT 1
-                )
-            """)
-
-            # Standardpreise setzen, falls noch keine Einträge vorhanden sind
-            default_preise = [
-                ("gefechtspistole", 1), ("kampf_pdw", 1), ("smg", 1), ("schlagstock", 1), ("tazer", 1),
-                ("taschenlampe", 1), ("fallschirm", 1), ("schutzweste", 1), ("magazin", 1), ("erweitertes_magazin", 1),
-                ("waffengriff", 1), ("schalldaempfer", 1), ("taschenlampe_aufsatz", 1), ("zielfernrohr", 1),
-                ("kampf_smg", 1), ("schwerer_revolver", 1)
-            ]
-
-            cursor.executemany(
-                "INSERT OR IGNORE INTO preise (artikel, preis) VALUES (?, ?)",
-                default_preise
+    def init_databases(self):
+        """Verbindet sich mit der MySQL/MariaDB und erstellt die benötigten Tabellen."""
+        conn = mysql.connector.connect(**self.db_config)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS sortiment (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) UNIQUE,
+                preis INT
             )
+        """)
 
-            conn.commit()
-    
-    async def is_allowed(self, interaction: discord.Interaction):
-        """Überprüft, ob der Benutzer berechtigt ist, den Befehl auszuführen."""
-        if not check_permissions("bestellen", interaction.user.id, [role.id for role in interaction.user.roles]):
-            await interaction.response.send_message("❌ Du hast keine Berechtigung für diesen Befehl!", ephemeral=True)
-            return False
-        return True
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS bestellungen (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                fraktion BIGINT,
+                message_id BIGINT,
+                waffe1 INT DEFAULT 0,
+                waffe2 INT DEFAULT 0,
+                waffe3 INT DEFAULT 0,
+                waffe4 INT DEFAULT 0,
+                waffe5 INT DEFAULT 0,
+                waffe6 INT DEFAULT 0,
+                waffe7 INT DEFAULT 0,
+                waffe8 INT DEFAULT 0,
+                waffe9 INT DEFAULT 0,
+                waffe10 INT DEFAULT 0,
+                waffe11 INT DEFAULT 0,
+                waffe12 INT DEFAULT 0,
+                waffe13 INT DEFAULT 0,
+                waffe14 INT DEFAULT 0,
+                waffe15 INT DEFAULT 0, 
+                waffe16 INT DEFAULT 0,
+                messageid BIGINT
+            )
+        """)
 
-    @app_commands.command(name="bestellen", description="Erstellt eine neue Waffenbestellung.")
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS bestellpermission (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                fraktion BIGINT UNIQUE,
+                waffe1 BOOLEAN DEFAULT 1,
+                waffe2 BOOLEAN DEFAULT 1,
+                waffe3 BOOLEAN DEFAULT 1,
+                waffe4 BOOLEAN DEFAULT 1,
+                waffe5 BOOLEAN DEFAULT 1,
+                waffe6 BOOLEAN DEFAULT 1,
+                waffe7 BOOLEAN DEFAULT 1,
+                waffe8 BOOLEAN DEFAULT 1,
+                waffe9 BOOLEAN DEFAULT 1,
+                waffe10 BOOLEAN DEFAULT 1,
+                waffe11 BOOLEAN DEFAULT 1,
+                waffe12 BOOLEAN DEFAULT 1,
+                waffe13 BOOLEAN DEFAULT 1,
+                waffe14 BOOLEAN DEFAULT 1,
+                waffe15 BOOLEAN DEFAULT 1,
+                waffe16 BOOLEAN DEFAULT 1
+            )
+        """)
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+
+    @app_commands.command(name="bestellen", description="Erstellt eine neue Bestellung.")
     async def bestellen(
-        self, interaction: discord.Interaction, 
-        fraktion: discord.Role,
-        gefechtspistole: int = 0, kampf_pdw: int = 0, smg: int = 0, schlagstock: int = 0,
+        self, interaction: discord.Interaction, fraktion: discord.Role,
+        gefechtspistole: int = 0, kampfpdw: int = 0, smg: int = 0, schlagstock: int = 0,
         tazer: int = 0, taschenlampe: int = 0, fallschirm: int = 0, schutzweste: int = 0,
         magazin: int = 0, erweitertes_magazin: int = 0, waffengriff: int = 0,
         schalldaempfer: int = 0, taschenlampe_aufsatz: int = 0, zielfernrohr: int = 0,
         kampf_smg: int = 0, schwerer_revolver: int = 0
     ):
-        if interaction.guild_id != BESTELLEN_GUILD_ID:
-            await interaction.response.send_message("❌ Dieser Befehl ist auf diesem Server nicht erlaubt!", ephemeral=True)
-            return
-
-        if not await self.is_allowed(interaction):
-            return
-
-        bestellte_artikel = {
-            "gefechtspistole": gefechtspistole,
-            "kampf_pdw": kampf_pdw,
-            "smg": smg,
-            "schlagstock": schlagstock,
-            "tazer": tazer,
-            "taschenlampe": taschenlampe,
-            "fallschirm": fallschirm,
-            "schutzweste": schutzweste,
-            "magazin": magazin,
-            "erweitertes_magazin": erweitertes_magazin,
-            "waffengriff": waffengriff,
-            "schalldaempfer": schalldaempfer,
-            "taschenlampe_aufsatz": taschenlampe_aufsatz,
-            "zielfernrohr": zielfernrohr,
-            "kampf_smg": kampf_smg,
-            "schwerer_revolver": schwerer_revolver
+        await interaction.response.defer()
+        
+        artikel_dict = {
+            "waffe1": gefechtspistole, "waffe2": kampfpdw, "waffe3": smg, "waffe4": schlagstock,
+            "waffe5": tazer, "waffe6": taschenlampe, "waffe7": fallschirm, "waffe8": schutzweste,
+            "waffe9": magazin, "waffe10": erweitertes_magazin, "waffe11": waffengriff, "waffe12": schalldaempfer,
+            "waffe13": taschenlampe_aufsatz, "waffe14": zielfernrohr, "waffe15": kampf_smg, "waffe16": schwerer_revolver
         }
-        artikel_preise = self.get_artikel_preise()
-        gesamtpreis = sum(artikel_preise[item] * menge for item, menge in bestellte_artikel.items() if menge > 0)
+        
+        conn = mysql.connector.connect(**self.db_config)
+        cursor = conn.cursor()
 
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO bestellungen (fraktion_id, preis) VALUES (?, ?)
-            """, (fraktion.id, gesamtpreis))
-            bestellnummer = cursor.lastrowid  # Die ID als Bestellnummer setzen
-            conn.commit()
+        # Bestellung in DB anlegen und Bestellnummer abrufen
+        cursor.execute("INSERT INTO bestellungen (fraktion) VALUES (%s)", (fraktion.id,))
+        conn.commit()
+        bestellnummer = cursor.lastrowid
 
-        bestellte_items = [f"🔹 **{name}:** `{menge}`" for name, menge in bestellte_artikel.items() if menge > 0]
+        gesamtpreis = 0
+        bestellte_items = []
+
+        for artikel, menge in artikel_dict.items():
+            if menge > 0:
+                cursor.execute("SELECT name, preis FROM sortiment WHERE id = %s", (artikel.replace("waffe", ""),))
+                artikel_info = cursor.fetchone()
+                artikel_name, artikel_preis = artikel_info if artikel_info else (artikel.replace('_', ' ').title(), 0)
+                gesamtpreis += artikel_preis * menge
+                bestellte_items.append(f"🔹 **{artikel_name}:** `{menge}`")
+
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
             description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Gesamtpreis:** `{gesamtpreis}€`\n📌 **Status:** Offen",
             color=discord.Color.green()
         )
         embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
-
-        await interaction.response.send_message(embed=embed)
+        
+        message = await interaction.followup.send(embed=embed)
+        
+        # Speichern der message_id für spätere Bearbeitung
+        cursor.execute("UPDATE bestellungen SET message_id = %s WHERE id = %s", (message.id, bestellnummer))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
 
 async def setup(bot):
-    await bot.add_cog(BestellenCog(bot))
+    await bot.add_cog(BestellenNeu(bot))
