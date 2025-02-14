@@ -26,7 +26,7 @@ class BestellenNeu(commands.Cog):
                 preis INT
             )
         """)
-
+        
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS bestellungen (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -47,11 +47,10 @@ class BestellenNeu(commands.Cog):
                 waffe13 INT DEFAULT 0,
                 waffe14 INT DEFAULT 0,
                 waffe15 INT DEFAULT 0, 
-                waffe16 INT DEFAULT 0,
-                messageid BIGINT
+                waffe16 INT DEFAULT 0
             )
         """)
-
+        
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS bestellpermission (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -75,9 +74,14 @@ class BestellenNeu(commands.Cog):
             )
         """)
         conn.commit()
-        
         cursor.close()
         conn.close()
+    
+    async def bestellen_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.guild_id != 1097626402540499044:
+            await interaction.response.send_message("❌ Dieser Befehl kann nur auf der erlaubten Guild verwendet werden.", ephemeral=True)
+            return False
+        return True
 
     @app_commands.command(name="bestellen", description="Erstellt eine neue Bestellung.")
     async def bestellen(
@@ -88,6 +92,8 @@ class BestellenNeu(commands.Cog):
         schalldaempfer: int = 0, taschenlampe_aufsatz: int = 0, zielfernrohr: int = 0,
         kampf_smg: int = 0, schwerer_revolver: int = 0
     ):
+        if not await self.bestellen_check(interaction):
+            return
         await interaction.response.defer()
         
         artikel_dict = {
@@ -99,15 +105,13 @@ class BestellenNeu(commands.Cog):
         
         conn = mysql.connector.connect(**self.db_config)
         cursor = conn.cursor()
-
-        # Bestellung in DB anlegen und Bestellnummer abrufen
         cursor.execute("INSERT INTO bestellungen (fraktion) VALUES (%s)", (fraktion.id,))
         conn.commit()
         bestellnummer = cursor.lastrowid
-
+        
         gesamtpreis = 0
         bestellte_items = []
-
+        
         for artikel, menge in artikel_dict.items():
             if menge > 0:
                 cursor.execute("SELECT name, preis FROM sortiment WHERE id = %s", (artikel.replace("waffe", ""),))
@@ -115,7 +119,7 @@ class BestellenNeu(commands.Cog):
                 artikel_name, artikel_preis = artikel_info if artikel_info else (artikel.replace('_', ' ').title(), 0)
                 gesamtpreis += artikel_preis * menge
                 bestellte_items.append(f"🔹 **{artikel_name}:** `{menge}`")
-
+        
         embed = discord.Embed(
             title="📦 Bestellung aufgegeben",
             description=f"**Fraktion:** {fraktion.mention}\n**Bestellnummer:** `{bestellnummer}`\n💰 **Gesamtpreis:** `{gesamtpreis}€`\n📌 **Status:** Offen",
@@ -124,8 +128,6 @@ class BestellenNeu(commands.Cog):
         embed.add_field(name="🛒 Bestellte Artikel", value="\n".join(bestellte_items), inline=False)
         
         message = await interaction.followup.send(embed=embed)
-        
-        # Speichern der message_id für spätere Bearbeitung
         cursor.execute("UPDATE bestellungen SET message_id = %s WHERE id = %s", (message.id, bestellnummer))
         conn.commit()
         
